@@ -56,6 +56,7 @@
             this.StepOverButton = new System.Windows.Forms.Button();
             this.HeaderTextbox = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.CH376Checkbox = new System.Windows.Forms.CheckBox();
             this.OPL2LCheckbox = new System.Windows.Forms.CheckBox();
             this.OPL2RCheckbox = new System.Windows.Forms.CheckBox();
             this.MPU401Checkbox = new System.Windows.Forms.CheckBox();
@@ -379,6 +380,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.CH376Checkbox);
             this.panel1.Controls.Add(this.OPL2LCheckbox);
             this.panel1.Controls.Add(this.OPL2RCheckbox);
             this.panel1.Controls.Add(this.MPU401Checkbox);
@@ -401,6 +403,16 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(230, 74);
             this.panel1.TabIndex = 12;
+            // 
+            // CH376Checkbox
+            // 
+            this.CH376Checkbox.Checked = true;
+            this.CH376Checkbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.CH376Checkbox.Location = new System.Drawing.Point(88, 38);
+            this.CH376Checkbox.Name = "CH376Checkbox";
+            this.CH376Checkbox.Size = new System.Drawing.Size(15, 14);
+            this.CH376Checkbox.TabIndex = 34;
+            this.CH376Checkbox.UseVisualStyleBackColor = true;
             // 
             // OPL2LCheckbox
             // 
@@ -683,5 +695,6 @@
         private System.Windows.Forms.CheckBox TMR0Checkbox;
         private System.Windows.Forms.CheckBox OPL2LCheckbox;
         private System.Windows.Forms.CheckBox OPL2RCheckbox;
+        private System.Windows.Forms.CheckBox CH376Checkbox;
     }
 }

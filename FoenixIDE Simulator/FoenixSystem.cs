@@ -9,14 +9,15 @@ using FoenixIDE.MemoryLocations;
 using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.UI;
+using FoenixIDE.Simulator.Devices.SDCard;
 
 namespace FoenixIDE
 {
-    public class FoenixSystem
+    public sealed class FoenixSystem
     {
         public MemoryManager Memory = null;
         public Processor.CPU CPU = null;
-        public Gpu gpu = null;
+        private Gpu gpu = null;
 
         public DeviceEnum InputDevice = DeviceEnum.Keyboard;
         public DeviceEnum OutputDevice = DeviceEnum.Screen;
@@ -28,8 +29,37 @@ namespace FoenixIDE
         public Processor.Breakpoints Breakpoints;
         public ListFile lstFile;
 
-        public FoenixSystem(Gpu gpu)
+
+        //https://csharpindepth.com/articles/singleton 
+        private static FoenixSystem instance = null;
+        private static readonly object padlock = new object();
+        public static FoenixSystem Current
         {
+            get
+            {
+                lock (padlock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new FoenixSystem();
+                    }
+                    return instance;
+                }
+            }
+        }
+
+        public Gpu GPU
+        {
+            get
+            {
+                return gpu;
+            }
+        }
+
+        private FoenixSystem()
+        {
+            gpu = new Gpu();
+
             Memory = new MemoryManager
             {
                 RAM = new MemoryRAM(MemoryMap.RAM_START, MemoryMap.RAM_SIZE), // 2MB RAM - extensible to 4MB
@@ -42,7 +72,7 @@ namespace FoenixIDE
                 MATH = new MathCoproRegisters(MemoryMap.MATH_START, MemoryMap.MATH_END - MemoryMap.MATH_START + 1), // 48 bytes
                 CODEC = new CodecRAM(MemoryMap.CODEC_WR_CTRL, 2),  // This register is only a single byte but we allow writing a word
                 KEYBOARD = new KeyboardRegister(MemoryMap.KBD_DATA_BUF, 5),
-                SDCARD = new SDCardRegister(MemoryMap.SDCARD_DATA, 2),
+                SDCARD = new SDCardRegister(MemoryMap.SDCARD_DATA, 3),
                 INTERRUPT = new InterruptController(MemoryMap.INT_PENDING_REG0, 3),
                 UART1 = new UART(MemoryMap.UART1_REGISTERS, 8),
                 UART2 = new UART(MemoryMap.UART2_REGISTERS, 8),
@@ -52,7 +82,7 @@ namespace FoenixIDE
 
             this.CPU = new CPU(Memory);
             this.CPU.SimulatorCommand += CPU_SimulatorCommand;
-            this.gpu = gpu;
+
             gpu.VRAM = Memory.VIDEO;
             gpu.RAM = Memory.RAM;
             gpu.VICKY = Memory.VICKY;

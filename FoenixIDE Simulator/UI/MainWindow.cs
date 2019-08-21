@@ -1,4 +1,5 @@
 ﻿using FoenixIDE.Basic;
+using FoenixIDE.Display;
 using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.Simulator.UI;
@@ -14,9 +15,10 @@ namespace FoenixIDE.UI
 {
     public partial class MainWindow : Form
     {
-        public FoenixSystem kernel;
+        public FoenixSystem system;
 
         public UI.CPUWindow debugWindow;
+        public SDCardWindow sDCardWindow;
         public MemoryWindow memoryWindow;
         public UploaderWindow uploaderWindow;
         private TileEditor tileEditor;
@@ -30,6 +32,8 @@ namespace FoenixIDE.UI
         private delegate void TransmitByteFunction(byte Value);
         private delegate void ShowFormFunction();
 
+        //private Gpu gpu = new Gpu();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -37,14 +41,15 @@ namespace FoenixIDE.UI
 
         private void BasicWindow_Load(object sender, EventArgs e)
         {
-            kernel = new FoenixSystem(this.gpu);
-            
-            terminal = new SerialTerminal();
-            kernel.Memory.UART1.TransmitByte += SerialTransmitByte;
-            kernel.Memory.UART2.TransmitByte += SerialTransmitByte;
+            system = FoenixSystem.Current;
+            AddGPUControl(system.GPU);
 
-            gpu.StartOfFrame += SOF;
-            kernel.ResetCPU(true);
+            terminal = new SerialTerminal();
+            system.Memory.UART1.TransmitByte += SerialTransmitByte;
+            system.Memory.UART2.TransmitByte += SerialTransmitByte;
+
+            system.GPU.StartOfFrame += SOF;
+            system.ResetCPU(true);
             ShowDebugWindow();
             ShowMemoryWindow();
 
@@ -59,17 +64,62 @@ namespace FoenixIDE.UI
             
         }
 
+        
+        private void AddGPUControl(Gpu gpu)
+        {
+            if (Controls.ContainsKey("name"))
+                Controls.Remove(this.Controls.Find("gpu", true)[0]);
+
+            gpu.BackColor = System.Drawing.Color.Blue;
+            gpu.Dock = System.Windows.Forms.DockStyle.Fill;
+            gpu.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            gpu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            gpu.Location = new System.Drawing.Point(16, 40);
+            gpu.Margin = new System.Windows.Forms.Padding(4);
+            gpu.MinimumSize = new System.Drawing.Size(640, 480);
+            gpu.Name = "gpu";
+            gpu.Size = new System.Drawing.Size(654, 526);
+            gpu.TabIndex = 0;
+            gpu.TabStop = false;
+            gpu.TileEditorMode = false;
+            gpu.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Gpu_MouseClick);
+            gpu.MouseEnter += new System.EventHandler(this.Gpu_MouseEnter);
+            gpu.MouseLeave += new System.EventHandler(this.Gpu_MouseLeave);
+            gpu.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Gpu_MouseMove);
+
+            Controls.Add(gpu);
+        }
+
+        private void ShowSDCardWindow()
+        {
+            if (sDCardWindow == null || sDCardWindow.IsDisposed)
+            {
+                system.CPU.DebugPause = true;
+                sDCardWindow = new SDCardWindow()
+                {
+                    Top = Screen.PrimaryScreen.WorkingArea.Top,
+                };
+                sDCardWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - sDCardWindow.Width;
+                sDCardWindow.SetSystem(system);
+                sDCardWindow.Show();
+            }
+            else
+            {
+                sDCardWindow.BringToFront();
+            }
+        }
+
         private void ShowDebugWindow()
         {
             if (debugWindow == null || debugWindow.IsDisposed)
             {
-                kernel.CPU.DebugPause = true;
+                system.CPU.DebugPause = true;
                 debugWindow = new UI.CPUWindow
                 {
                     Top = Screen.PrimaryScreen.WorkingArea.Top,
                 };
                 debugWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - debugWindow.Width;
-                debugWindow.SetKernel(kernel);
+                debugWindow.SetKernel(system);
                 debugWindow.Show();
             } 
             else
@@ -84,7 +134,7 @@ namespace FoenixIDE.UI
             {
                 memoryWindow = new MemoryWindow
                 {
-                    Memory = kernel.CPU.Memory,
+                    Memory = system.CPU.Memory,
                     Left = debugWindow.Left,
                     Top = debugWindow.Top + debugWindow.Height
                 };
@@ -116,7 +166,7 @@ namespace FoenixIDE.UI
                 int left = this.Left + (this.Width - uploaderWindow.Width) / 2;
                 int top =  this.Top + (this.Height - uploaderWindow.Height) / 2;
                 uploaderWindow.Location = new Point(left, top);
-                uploaderWindow.Memory = kernel.CPU.Memory;
+                uploaderWindow.Memory = system.CPU.Memory;
                 uploaderWindow.Show();
             }
             else
@@ -138,7 +188,7 @@ namespace FoenixIDE.UI
             BitmapLoader loader = new BitmapLoader
             {
                 StartPosition = FormStartPosition.CenterParent,
-                Memory = kernel.CPU.Memory,
+                Memory = system.CPU.Memory,
                 ResChecker = ResChecker
             };
             loader.OnTileLoaded += NewTileLoaded;
@@ -147,14 +197,14 @@ namespace FoenixIDE.UI
 
         public void SOF()
         {
-            byte mask = kernel.Memory.ReadByte(MemoryLocations.MemoryMap.INT_MASK_REG0);
-            if (!kernel.CPU.Flags.IrqDisable && ((~mask & 1) == 1))
+            byte mask = system.Memory.ReadByte(MemoryLocations.MemoryMap.INT_MASK_REG0);
+            if (!system.CPU.Flags.IrqDisable && ((~mask & 1) == 1))
             {
                 // Set the Keyboard Interrupt
-                byte IRQ0 = kernel.Memory.ReadByte(MemoryLocations.MemoryMap.INT_PENDING_REG0);
+                byte IRQ0 = system.Memory.ReadByte(MemoryLocations.MemoryMap.INT_PENDING_REG0);
                 IRQ0 |= 1;
-                kernel.Memory.WriteByte(MemoryLocations.MemoryMap.INT_PENDING_REG0, IRQ0);
-                kernel.CPU.Pins.IRQ = true;
+                system.Memory.WriteByte(MemoryLocations.MemoryMap.INT_PENDING_REG0, IRQ0);
+                system.CPU.Pins.IRQ = true;
             }
         }
 
@@ -164,7 +214,7 @@ namespace FoenixIDE.UI
             if (scanCode != ScanCode.sc_null)
             {
                 lastKeyPressed.Text = "$" + ((byte)scanCode).ToString("X2");
-                kernel.Memory.KEYBOARD.WriteKey(kernel, scanCode);
+                system.Memory.KEYBOARD.WriteKey(system, scanCode);
             }
             else
             {
@@ -179,7 +229,7 @@ namespace FoenixIDE.UI
             {
                 scanCode += 0x80;
                 lastKeyPressed.Text = "$" + ((byte)scanCode).ToString("X2");
-                kernel.Memory.KEYBOARD.WriteKey(kernel, scanCode);
+                system.Memory.KEYBOARD.WriteKey(system, scanCode);
             }
             else
             {
@@ -191,6 +241,7 @@ namespace FoenixIDE.UI
         {
             debugWindow.Close();
             memoryWindow.Close();
+            sDCardWindow.Close();
             this.Close();
         }
 
@@ -201,8 +252,8 @@ namespace FoenixIDE.UI
         {
             DateTime currentTime = DateTime.Now;
             TimeSpan s = currentTime - previousTime;
-            int currentCounter = kernel.CPU.CycleCounter;
-            int currentFrame = gpu.paintCycle;
+            int currentCounter = system.CPU.CycleCounter;
+            int currentFrame = system.GPU.paintCycle;
             double cps = (currentCounter - previousCounter) / s.TotalSeconds;
             double fps = (currentFrame - previousFrame) / s.TotalSeconds;
 
@@ -212,14 +263,14 @@ namespace FoenixIDE.UI
             cpsPerf.Text = "CPS: " + cps.ToString("N0");
             fpsPerf.Text = "FPS: " + fps.ToString("N0");
             // write the time to memory - values are BCD
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_SEC - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Second));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MIN - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Minute));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_HRS - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Hour));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DAY - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Day));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Month));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Year % 100));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY - kernel.Memory.VICKY.StartAddress, BCD(currentTime.Year / 100));
-            kernel.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DOW - kernel.Memory.VICKY.StartAddress, (byte)(currentTime.DayOfWeek+1));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_SEC - system.Memory.VICKY.StartAddress, BCD(currentTime.Second));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MIN - system.Memory.VICKY.StartAddress, BCD(currentTime.Minute));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_HRS - system.Memory.VICKY.StartAddress, BCD(currentTime.Hour));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DAY - system.Memory.VICKY.StartAddress, BCD(currentTime.Day));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH - system.Memory.VICKY.StartAddress, BCD(currentTime.Month));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR - system.Memory.VICKY.StartAddress, BCD(currentTime.Year % 100));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY - system.Memory.VICKY.StartAddress, BCD(currentTime.Year / 100));
+            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DOW - system.Memory.VICKY.StartAddress, (byte)(currentTime.DayOfWeek+1));
         }
 
         private byte BCD(int val)
@@ -250,9 +301,9 @@ namespace FoenixIDE.UI
             debugWindow.PauseButton_Click(null, null);
             debugWindow.ClearTrace();
             previousCounter = 0;
-            kernel.ResetCPU(true);
+            system.ResetCPU(true);
             memoryWindow.UpdateMCRButtons();
-            kernel.CPU.Run();
+            system.CPU.Run();
             debugWindow.UpdateQueue();
             debugWindow.RunButton_Click(null, null);
         }
@@ -262,21 +313,21 @@ namespace FoenixIDE.UI
          */
         private void DebugToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            kernel.CPU.DebugPause = true;
+            system.CPU.DebugPause = true;
             debugWindow.ClearTrace();
             previousCounter = 0;
-            kernel.ResetCPU(true);
+            system.ResetCPU(true);
             memoryWindow.UpdateMCRButtons();
         }
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
             ModeText.Text = "Shutting down CPU thread";
-            kernel.CPU.DebugPause = true;
-            if (kernel.CPU.CPUThread != null)
+            system.CPU.DebugPause = true;
+            if (system.CPU.CPUThread != null)
             {
-                kernel.CPU.CPUThread.Abort();
-                kernel.CPU.CPUThread.Join(1000);
+                system.CPU.CPUThread.Abort();
+                system.CPU.CPUThread.Join(1000);
             }
         }
 
@@ -293,15 +344,16 @@ namespace FoenixIDE.UI
                 memoryWindow.Close();
                 if (ResetMemory)
                 {
-                    kernel = new FoenixSystem(this.gpu);
+                    system = FoenixSystem.Current;
+                    AddGPUControl(system.GPU);
                 }
-                kernel.SetKernel(dialog.FileName);
-                kernel.ResetCPU(ResetMemory);
+                system.SetKernel(dialog.FileName);
+                system.ResetCPU(ResetMemory);
                 ShowDebugWindow();
                 ShowMemoryWindow();
                 if (tileEditor != null && tileEditor.Visible)
                 {
-                    tileEditor.SetMemory(kernel.Memory);
+                    tileEditor.SetMemory(system.Memory);
                 }
             }
         }
@@ -330,13 +382,13 @@ namespace FoenixIDE.UI
             {
                 debugWindow.Close();
                 memoryWindow.Close();
-                kernel = new FoenixSystem(this.gpu)
-                {
-                    Resources = ResChecker,
-                    Breakpoints = CPUWindow.Instance.breakpoints
-                };
-                kernel.SetKernel(dialog.FileName);
-                kernel.ResetCPU(true);
+                system = FoenixSystem.Current;
+
+                system.Resources = ResChecker;
+                system.Breakpoints = CPUWindow.Instance.breakpoints;
+                
+                system.SetKernel(dialog.FileName);
+                system.ResetCPU(true);
                 ShowDebugWindow();
                 ShowMemoryWindow();
             }
@@ -357,7 +409,7 @@ namespace FoenixIDE.UI
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                FoeniXmlFile fnxml = new FoeniXmlFile(kernel.Memory, ResChecker, CPUWindow.Instance.breakpoints);
+                FoeniXmlFile fnxml = new FoeniXmlFile(system.Memory, ResChecker, CPUWindow.Instance.breakpoints);
                 fnxml.Write(dialog.FileName, true);
             }
         }
@@ -371,9 +423,9 @@ namespace FoenixIDE.UI
         // When the editor window is closed, exit the TileEditorMode
         private void EditorWindowClosed(object sender, FormClosedEventArgs e)
         {
-            gpu.TileEditorMode = false;
+            system.GPU.TileEditorMode = false;
             // Restore the previous graphics mode
-            kernel.Memory.VICKY.WriteByte(0, previousGraphicMode);
+            system.Memory.VICKY.WriteByte(0, previousGraphicMode);
             tileEditor.Dispose();
             tileEditor = null;
         }
@@ -383,13 +435,13 @@ namespace FoenixIDE.UI
             if (tileEditor == null)
             {
                 tileEditor = new TileEditor();
-                tileEditor.SetMemory(kernel.Memory);
-                gpu.TileEditorMode = true;
+                tileEditor.SetMemory(system.Memory);
+                system.GPU.TileEditorMode = true;
                 // Set Vicky into Tile mode
-                previousGraphicMode = kernel.Memory.VICKY.ReadByte(0);
-                kernel.Memory.VICKY.WriteByte(0, 0x10);
+                previousGraphicMode = system.Memory.VICKY.ReadByte(0);
+                system.Memory.VICKY.WriteByte(0, 0x10);
                 // Enable borders
-                kernel.Memory.VICKY.WriteByte(4, 1);
+                system.Memory.VICKY.WriteByte(4, 1);
                 tileEditor.Show();
                 tileEditor.FormClosed += new FormClosedEventHandler(EditorWindowClosed);
 
@@ -404,9 +456,9 @@ namespace FoenixIDE.UI
 
         private void Gpu_MouseMove(object sender, MouseEventArgs e)
         {
-            double ratioW = gpu.Width / 640d;
-            double ratioH = gpu.Height / 480d;
-            if (gpu.TileEditorMode)
+            double ratioW = system.GPU.Width / 640d;
+            double ratioH = system.GPU.Height / 480d;
+            if (system.GPU.TileEditorMode)
             {
                 if ((e.X / ratioW > 32 && e.X / ratioW < 608) && (e.Y / ratioH > 32 && e.Y / ratioH < 448))
                 {
@@ -420,13 +472,13 @@ namespace FoenixIDE.UI
             else
             {
                 // Read the mouse pointer register
-                byte mouseReg = kernel.Memory.VICKY.ReadByte(0x700);
+                byte mouseReg = system.Memory.VICKY.ReadByte(0x700);
                 if ((mouseReg & 1) == 1)
                 {
                     int X = (int)(e.X / ratioW);
                     int Y = (int)(e.Y / ratioH);
-                    kernel.Memory.VICKY.WriteWord(0x702, X);
-                    kernel.Memory.VICKY.WriteWord(0x704, Y);
+                    system.Memory.VICKY.WriteWord(0x702, X);
+                    system.Memory.VICKY.WriteWord(0x704, Y);
                     
                 }
                 else
@@ -438,7 +490,7 @@ namespace FoenixIDE.UI
 
         private void Gpu_MouseLeave(object sender, EventArgs e)
         {
-            if (gpu.MousePointerMode || gpu.TileEditorMode)
+            if (system.GPU.MousePointerMode || system.GPU.TileEditorMode)
             {
                 Cursor.Show();
             }
@@ -447,10 +499,10 @@ namespace FoenixIDE.UI
 
         private void Gpu_MouseClick(object sender, MouseEventArgs e)
         {
-            if (gpu.TileEditorMode && gpu.Cursor != Cursors.No)
+            if (system.GPU.TileEditorMode && system.GPU.Cursor != Cursors.No)
             {
-                double ratioW = gpu.Width / 640d;
-                double ratioH = gpu.Height / 480d;
+                double ratioW = system.GPU.Width / 640d;
+                double ratioH = system.GPU.Height / 480d;
                 TileClicked?.Invoke(new Point((int)(e.X / ratioW / 16), (int)(e.Y / ratioH / 16)));
             }
         }
@@ -458,7 +510,7 @@ namespace FoenixIDE.UI
 
         private void Gpu_MouseEnter(object sender, EventArgs e)
         {
-            if (gpu.MousePointerMode && !gpu.TileEditorMode)
+            if (system.GPU.MousePointerMode && !system.GPU.TileEditorMode)
             {
                 Cursor.Hide();
             }
@@ -467,6 +519,11 @@ namespace FoenixIDE.UI
         private void TerminalToolStripMenuItem_Click(object sender, EventArgs e)
         {
             terminal.Show();
+        }
+
+        private void SDCardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowSDCardWindow();
         }
     }
 }

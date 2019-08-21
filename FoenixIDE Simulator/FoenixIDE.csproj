@@ -58,6 +58,9 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DequeNet, Version=1.0.1.0, Culture=neutral, PublicKeyToken=6c367a1c27d122c9, processorArchitecture=MSIL">
+      <HintPath>..\packages\DequeNET.1.0.1\lib\portable-net4+win8\DequeNet.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -74,7 +77,10 @@
     <Compile Include="Devices\KeyboardRegister.cs" />
     <Compile Include="Devices\MPU401.cs" />
     <Compile Include="Devices\OPL2.cs" />
-    <Compile Include="Devices\SDCardRegister.cs" />
+    <Compile Include="Devices\SDCard\SDCardRegister.cs" />
+    <Compile Include="Devices\SDCard\SDCommand.cs" />
+    <Compile Include="Devices\SDCard\SDInterruptState.cs" />
+    <Compile Include="Devices\SDCard\SDResponse.cs" />
     <Compile Include="Devices\UART.cs" />
     <Compile Include="FileFormat\DebugLine.cs" />
     <Compile Include="FileFormat\FoenixmlFile.cs" />
@@ -158,6 +164,12 @@
     <Compile Include="UI\BitmapLoader.Designer.cs">
       <DependentUpon>BitmapLoader.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\SDCardWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SDCardWindow.Designer.cs">
+      <DependentUpon>SDCardWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\SerialTerminal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -210,6 +222,9 @@
     <EmbeddedResource Include="UI\BitmapLoader.resx">
       <DependentUpon>BitmapLoader.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\SDCardWindow.resx">
+      <DependentUpon>SDCardWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\SerialTerminal.resx">
       <DependentUpon>SerialTerminal.cs</DependentUpon>
     </EmbeddedResource>
@@ -219,6 +234,7 @@
     <EmbeddedResource Include="UI\UploaderWindow.resx">
       <DependentUpon>UploaderWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -51,6 +51,7 @@ namespace FoenixIDE.UI
             this.windowsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cPUToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.memoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.terminalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RestartMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,8 +62,7 @@ namespace FoenixIDE.UI
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.gpu = new FoenixIDE.Display.Gpu();
-            this.terminalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sDCardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -148,35 +148,35 @@ namespace FoenixIDE.UI
             // menuOpenHexFile
             // 
             this.menuOpenHexFile.Name = "menuOpenHexFile";
-            this.menuOpenHexFile.Size = new System.Drawing.Size(215, 22);
+            this.menuOpenHexFile.Size = new System.Drawing.Size(216, 22);
             this.menuOpenHexFile.Text = "&Open Hex File";
             this.menuOpenHexFile.Click += new System.EventHandler(this.MenuOpenHexFile_Click);
             // 
             // openHexFileWoZeroingToolStripMenuItem
             // 
             this.openHexFileWoZeroingToolStripMenuItem.Name = "openHexFileWoZeroingToolStripMenuItem";
-            this.openHexFileWoZeroingToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.openHexFileWoZeroingToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.openHexFileWoZeroingToolStripMenuItem.Text = "Open Hex File w/o &Zeroing";
             this.openHexFileWoZeroingToolStripMenuItem.Click += new System.EventHandler(this.OpenHexFileWoZeroingToolStripMenuItem_Click);
             // 
             // loadFNXMLFileToolStripMenuItem
             // 
             this.loadFNXMLFileToolStripMenuItem.Name = "loadFNXMLFileToolStripMenuItem";
-            this.loadFNXMLFileToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.loadFNXMLFileToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.loadFNXMLFileToolStripMenuItem.Text = "&Load Project...";
             this.loadFNXMLFileToolStripMenuItem.Click += new System.EventHandler(this.LoadFNXMLFileToolStripMenuItem_Click);
             // 
             // saveProjectToolStripMenuItem
             // 
             this.saveProjectToolStripMenuItem.Name = "saveProjectToolStripMenuItem";
-            this.saveProjectToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.saveProjectToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.saveProjectToolStripMenuItem.Text = "&Save Project...";
             this.saveProjectToolStripMenuItem.Click += new System.EventHandler(this.SaveProjectToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
@@ -187,7 +187,7 @@ namespace FoenixIDE.UI
             this.tileEditorToolStripMenuItem,
             this.uploaderToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "&Tools";
             // 
             // loadImageToolStripMenuItem
@@ -216,7 +216,8 @@ namespace FoenixIDE.UI
             this.windowsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.cPUToolStripMenuItem,
             this.memoryToolStripMenuItem,
-            this.terminalToolStripMenuItem});
+            this.terminalToolStripMenuItem,
+            this.sDCardToolStripMenuItem});
             this.windowsToolStripMenuItem.Name = "windowsToolStripMenuItem";
             this.windowsToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
             this.windowsToolStripMenuItem.Text = "&Windows";
@@ -234,6 +235,13 @@ namespace FoenixIDE.UI
             this.memoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.memoryToolStripMenuItem.Text = "&Memory";
             this.memoryToolStripMenuItem.Click += new System.EventHandler(this.MemoryToolStripMenuItem_Click);
+            // 
+            // terminalToolStripMenuItem
+            // 
+            this.terminalToolStripMenuItem.Name = "terminalToolStripMenuItem";
+            this.terminalToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.terminalToolStripMenuItem.Text = "&Terminal";
+            this.terminalToolStripMenuItem.Click += new System.EventHandler(this.TerminalToolStripMenuItem_Click);
             // 
             // resetToolStripMenuItem
             // 
@@ -321,38 +329,18 @@ namespace FoenixIDE.UI
             this.panel4.Size = new System.Drawing.Size(686, 16);
             this.panel4.TabIndex = 6;
             // 
-            // gpu
+            // sDCardToolStripMenuItem
             // 
-            this.gpu.BackColor = System.Drawing.Color.Blue;
-            this.gpu.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.gpu.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gpu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.gpu.Location = new System.Drawing.Point(16, 40);
-            this.gpu.Margin = new System.Windows.Forms.Padding(4);
-            this.gpu.MinimumSize = new System.Drawing.Size(640, 480);
-            this.gpu.Name = "gpu";
-            this.gpu.Size = new System.Drawing.Size(654, 526);
-            this.gpu.TabIndex = 0;
-            this.gpu.TabStop = false;
-            this.gpu.TileEditorMode = false;
-            this.gpu.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Gpu_MouseClick);
-            this.gpu.MouseEnter += new System.EventHandler(this.Gpu_MouseEnter);
-            this.gpu.MouseLeave += new System.EventHandler(this.Gpu_MouseLeave);
-            this.gpu.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Gpu_MouseMove);
-            // 
-            // terminalToolStripMenuItem
-            // 
-            this.terminalToolStripMenuItem.Name = "terminalToolStripMenuItem";
-            this.terminalToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.terminalToolStripMenuItem.Text = "&Terminal";
-            this.terminalToolStripMenuItem.Click += new System.EventHandler(this.TerminalToolStripMenuItem_Click);
+            this.sDCardToolStripMenuItem.Name = "sDCardToolStripMenuItem";
+            this.sDCardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sDCardToolStripMenuItem.Text = "&SDCard";
+            this.sDCardToolStripMenuItem.Click += new System.EventHandler(this.SDCardToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(686, 610);
-            this.Controls.Add(this.gpu);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -384,7 +372,6 @@ namespace FoenixIDE.UI
 
         #endregion
 
-        private Gpu gpu;
         private global::System.Windows.Forms.StatusStrip statusStrip1;
         private global::System.Windows.Forms.ToolStripStatusLabel ModeText;
         private global::System.Windows.Forms.ToolStripStatusLabel lastKeyPressed;
@@ -415,6 +402,7 @@ namespace FoenixIDE.UI
         private System.Windows.Forms.ToolStripMenuItem tileEditorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveProjectToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem terminalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sDCardToolStripMenuItem;
     }
 }
 

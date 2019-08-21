@@ -10,6 +10,8 @@ namespace FoenixIDE.Simulator.Devices
     {
         public OPL2(int StartAddress, int Length) : base(StartAddress, Length)
         {
+            //https://github.com/scemino/nscumm/tree/master/NScumm.Core/Audio/OPL/DosBox
+            // nscum seems to have a .net adlib OPL implementation.
         }
     }
 }

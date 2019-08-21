@@ -7,6 +7,7 @@ using FoenixIDE.Display;
 using FoenixIDE.MemoryLocations;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.Simulator.Devices;
+using FoenixIDE.Simulator.Devices.SDCard;
 
 namespace FoenixIDE.MemoryLocations
 {

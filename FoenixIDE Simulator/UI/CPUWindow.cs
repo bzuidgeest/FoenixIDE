@@ -20,7 +20,7 @@ namespace FoenixIDE.UI
         public Processor.Breakpoints breakpoints = new Processor.Breakpoints();
 
         public static CPUWindow Instance = null;
-        private FoenixSystem kernel = null;
+        private FoenixSystem system = null;
 
         List<DebugLine> queue = null;
         private Brush labelBrush = new SolidBrush(Color.White);
@@ -41,31 +41,32 @@ namespace FoenixIDE.UI
         {
             InitializeComponent();
             Instance = this;
+            BreakOnIRQCheckBox.Checked = false;
         }
 
         public void SetKernel(FoenixSystem kernel)
         {
-            this.kernel = kernel;
+            this.system = kernel;
             registerDisplay1.CPU = kernel.CPU;
             UpdateQueue();
         }
 
         public void UpdateQueue()
         {
-            if (kernel.lstFile.Lines.Count > 0)
+            if (system.lstFile.Lines.Count > 0)
             {
-                queue = kernel.lstFile.Lines;
+                queue = system.lstFile.Lines;
             }
                 else
             {
                 queue = new List<DebugLine>(DebugPanel.Height / ROW_HEIGHT);
-                GenerateNextInstruction(kernel.CPU.GetLongPC());
+                GenerateNextInstruction(system.CPU.GetLongPC());
             }
         }
 
         private void ThreadProc()
         {
-            while (!kernel.CPU.DebugPause && !kernel.CPU.Waiting)
+            while (!system.CPU.DebugPause && !system.CPU.Waiting)
             {
                 ExecuteStep();
             }
@@ -96,6 +97,7 @@ namespace FoenixIDE.UI
             Tooltip.SetToolTip(COM2Checkbox, "Break on COM2 Interrupts");
             Tooltip.SetToolTip(COM1Checkbox, "Break on COM1 Interrupts");
             Tooltip.SetToolTip(MPU401Checkbox, "Break on MPU401 Interrupts");
+            Tooltip.SetToolTip(CH376Checkbox, "Break on CH376 Interrupt");
 
             // Register 2
             Tooltip.SetToolTip(OPL2RCheckbox, "Break on OPL2 Right Interrupts");
@@ -106,7 +108,7 @@ namespace FoenixIDE.UI
         private void DebugPanel_Paint(object sender, PaintEventArgs e)
         {
             bool paint = false;
-            int currentPC = kernel.CPU.GetLongPC();
+            int currentPC = system.CPU.GetLongPC();
             //if ((kernel.CPU.DebugPause))
             if (true && queue !=null)
             {
@@ -149,7 +151,7 @@ namespace FoenixIDE.UI
                                             e.Graphics.FillRectangle(yellowBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                                         }
                                         // Check if the memory still matches the opcodes
-                                        if (!q0.CheckOpcodes(kernel.Memory.RAM))
+                                        if (!q0.CheckOpcodes(system.Memory.RAM))
                                         {
                                             e.Graphics.FillRectangle(redBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                                         }
@@ -186,7 +188,7 @@ namespace FoenixIDE.UI
                                 e.Graphics.FillRectangle(orangeBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                             }
                             // Check if the memory still matches the opcodes
-                            if (!line.CheckOpcodes(kernel.Memory.RAM))
+                            if (!line.CheckOpcodes(system.Memory.RAM))
                             {
                                 e.Graphics.FillRectangle(redBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                             }
@@ -214,7 +216,7 @@ namespace FoenixIDE.UI
 
         private void DebugPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (kernel.CPU.DebugPause)
+            if (system.CPU.DebugPause)
             {
                 if (e.X > 12 && e.X < 12 + 7 * 6)
                 {
@@ -366,7 +368,7 @@ namespace FoenixIDE.UI
             // Clear the interrupt
             IRQPC = -1;
             DebugPanel_Leave(sender, e);
-            kernel.CPU.DebugPause = false;
+            system.CPU.DebugPause = false;
             RunButton.Enabled = false;
             lastLine.Text = "";
             t = new Thread(new ThreadStart(ThreadProc));
@@ -377,7 +379,7 @@ namespace FoenixIDE.UI
         public void PauseButton_Click(object sender, EventArgs e)
         {
             DebugPanel_Leave(sender, e);
-            kernel.CPU.DebugPause = true;
+            system.CPU.DebugPause = true;
             t?.Join();
             RunButton.Enabled = true;
             UpdateTraceTimer.Enabled = false;
@@ -387,7 +389,7 @@ namespace FoenixIDE.UI
         private void StepButton_Click(object sender, EventArgs e)
         {
             DebugPanel_Leave(sender, e);
-            kernel.CPU.DebugPause = true;
+            system.CPU.DebugPause = true;
             t?.Join();
             UpdateTraceTimer.Enabled = false;
             RunButton.Enabled = true;
@@ -398,7 +400,7 @@ namespace FoenixIDE.UI
             }
 
             RefreshStatus();
-            kernel.CPU.DebugPause = true;
+            system.CPU.DebugPause = true;
         }
 
         private void RefreshStatus()
@@ -411,23 +413,23 @@ namespace FoenixIDE.UI
         public void UpdateStackDisplay()
         {
             stackText.Clear();
-            stackText.AppendText("Top: $" + kernel.CPU.Stack.TopOfStack.ToString("X4") + "\r\n");
-            stackText.AppendText("SP : $" + kernel.CPU.Stack.Value.ToString("X4") + "\r\n");
-            stackText.AppendText("N  : " + (kernel.CPU.Stack.TopOfStack - kernel.CPU.Stack.Value).ToString().PadLeft(4) + "\r\n");
+            stackText.AppendText("Top: $" + system.CPU.Stack.TopOfStack.ToString("X4") + "\r\n");
+            stackText.AppendText("SP : $" + system.CPU.Stack.Value.ToString("X4") + "\r\n");
+            stackText.AppendText("N  : " + (system.CPU.Stack.TopOfStack - system.CPU.Stack.Value).ToString().PadLeft(4) + "\r\n");
             stackText.AppendText("───────────\r\n");
 
             // Display all values on the stack
-            if (kernel.CPU.Stack.Value != kernel.CPU.Stack.TopOfStack)
+            if (system.CPU.Stack.Value != system.CPU.Stack.TopOfStack)
             {
-                int i = kernel.CPU.Stack.TopOfStack - kernel.CPU.Stack.Value;
+                int i = system.CPU.Stack.TopOfStack - system.CPU.Stack.Value;
                 if (i > 100)
                 {
                     i = 100;
                 }
                 while (i > 0)
                 {
-                    int address = kernel.CPU.Stack.Value + i;
-                    stackText.AppendText(address.ToString("X4") + " " + kernel.CPU.Memory[address].ToString("X2") + "\r\n");
+                    int address = system.CPU.Stack.Value + i;
+                    stackText.AppendText(address.ToString("X4") + " " + system.CPU.Memory[address].ToString("X2") + "\r\n");
                     i--;
                 }
             }
@@ -468,23 +470,23 @@ namespace FoenixIDE.UI
         {
             StepCounter++;
 
-            int currentPC = kernel.CPU.GetLongPC();
+            int currentPC = system.CPU.GetLongPC();
             DebugLine line = null;
-            if (!kernel.CPU.ExecuteNext())
+            if (!system.CPU.ExecuteNext())
             {
                 
-                int nextPC = kernel.CPU.GetLongPC();
-                if (breakpoints.ContainsKey(nextPC) || (BreakOnIRQCheckBox.Checked && ((kernel.CPU.Pins.GetInterruptPinActive && InterruptMatchesCheckboxes())|| kernel.CPU.CurrentOpcode.Value == 0)))
+                int nextPC = system.CPU.GetLongPC();
+                if (breakpoints.ContainsKey(nextPC) || (BreakOnIRQCheckBox.Checked && ((system.CPU.Pins.GetInterruptPinActive && InterruptMatchesCheckboxes())|| system.CPU.CurrentOpcode.Value == 0)))
                 {
                     if (UpdateTraceTimer.Enabled)
                     {
                         UpdateTraceTimer.Enabled = false;
-                        kernel.CPU.DebugPause = true;
+                        system.CPU.DebugPause = true;
                         //queue.Clear();
                     }
-                    if (kernel.CPU.Pins.GetInterruptPinActive && !kernel.CPU.Flags.IrqDisable)
+                    if (system.CPU.Pins.GetInterruptPinActive && !system.CPU.Flags.IrqDisable)
                     {
-                        IRQPC = kernel.CPU.GetLongPC();
+                        IRQPC = system.CPU.GetLongPC();
                     }
                     if (line == null)
                     {
@@ -501,10 +503,10 @@ namespace FoenixIDE.UI
             // Print the next instruction on lastLine
             if (!UpdateTraceTimer.Enabled && line == null)
             {
-                line = GetExecutionInstruction(kernel.CPU.GetLongPC());
+                line = GetExecutionInstruction(system.CPU.GetLongPC());
                 if (line == null)
                 {
-                    GenerateNextInstruction(kernel.CPU.GetLongPC());
+                    GenerateNextInstruction(system.CPU.GetLongPC());
                 }
             }
         }
@@ -528,14 +530,14 @@ namespace FoenixIDE.UI
         }
         private void GenerateNextInstruction(int pc)
         {
-            OpCode oc = kernel.CPU.PreFetch();
+            OpCode oc = system.CPU.PreFetch();
             int cmdLength = oc.Length;
             byte[] command = new byte[cmdLength];
             for (int i = 0; i < cmdLength; i++)
             {
-                command[i] = kernel.Memory.RAM.ReadByte(pc + i);
+                command[i] = system.Memory.RAM.ReadByte(pc + i);
             }
-            string opcodes = oc.ToString(kernel.CPU.ReadSignature(oc, pc));
+            string opcodes = oc.ToString(system.CPU.ReadSignature(oc, pc));
             //string status = "";
             DebugLine line = new DebugLine(pc, command, opcodes, null);
             if (!lastLine.InvokeRequired)
@@ -569,9 +571,9 @@ namespace FoenixIDE.UI
         private void JumpButton_Click(object sender, EventArgs e)
         {
             int pc = breakpoints.GetIntFromHex(locationInput.Text);
-            kernel.CPU.SetLongPC(pc);
+            system.CPU.SetLongPC(pc);
             ClearTrace();
-            kernel.CPU.ExecuteNext();
+            system.CPU.ExecuteNext();
         }
 
         private void ClearTraceButton_Click(object sender, EventArgs e)
@@ -583,7 +585,7 @@ namespace FoenixIDE.UI
         {
             StepCounter = 0;
             IRQPC = 0;
-            kernel.CPU.Stack.Reset();
+            system.CPU.Stack.Reset();
             stackText.Clear();
             DebugPanel.Refresh();
             lastLine.Text = "";
@@ -605,7 +607,7 @@ namespace FoenixIDE.UI
         private void CPUWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
             // Kill the thread
-            kernel.CPU.DebugPause = true;
+            system.CPU.DebugPause = true;
             t?.Join();
         }
 
@@ -644,6 +646,7 @@ namespace FoenixIDE.UI
             COM2Checkbox.Visible = visible;
             COM1Checkbox.Visible = visible;
             MPU401Checkbox.Visible = visible;
+            CH376Checkbox.Visible = visible;
 
             OPL2LCheckbox.Visible = visible;
             OPL2RCheckbox.Visible = visible;
@@ -656,17 +659,23 @@ namespace FoenixIDE.UI
         private bool InterruptMatchesCheckboxes()
         {
             // Read registers
-            byte reg0 = kernel.Memory.INTERRUPT.ReadByte(0);
+            byte reg0 = system.Memory.INTERRUPT.ReadByte(0);
             if ((reg0 & 1) == 1 && SOFCheckbox.Checked)
             {
                 return true;
             }
-            byte reg1 = kernel.Memory.INTERRUPT.ReadByte(1);
-            byte reg2 = kernel.Memory.INTERRUPT.ReadByte(2);
+            byte reg1 = system.Memory.INTERRUPT.ReadByte(1);
+            byte reg2 = system.Memory.INTERRUPT.ReadByte(2);
             if ((reg1 & 1) == 1 && KeyboardCheckBox.Checked)
             {
                 return true;
             }
+
+            if ((reg1 & 128) == 128 && CH376Checkbox.Checked)
+            {
+                return true;
+            }
+
             return false;
         }
     }

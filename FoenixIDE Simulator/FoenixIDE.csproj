@@ -113,6 +113,7 @@
     <Compile Include="Display\Gpu.Designer.cs">
       <DependentUpon>Gpu.cs</DependentUpon>
     </Compile>
+    <Compile Include="QueueExtensions.cs" />
     <Compile Include="UI\CPUWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -271,6 +272,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\SDCardDebugger\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

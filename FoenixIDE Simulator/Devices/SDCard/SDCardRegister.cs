@@ -52,6 +52,8 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         }
     }
 
+    
+
     public class LongBuffer
     {
         private List<byte> values;
@@ -121,7 +123,10 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         private SDCommand currentCommand = 0;
         private SDInterruptState interruptState = 0;
         private Deque<byte> outData;
+        private Queue<byte> inData;
+
         private bool mounted = false;
+        private string directoryFilter = "";
 
         private CH376FileInfo currentFile;
 
@@ -131,9 +136,15 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         public event EventHandler<SDCardReadEvent> OnRead;
         public event EventHandler<SDCardWriteEvent> OnWrite;
 
+        public String Root { get; set; } = "c:\\";
+        public bool SDCardInserted { get; set; } = true;
+
         public SDCardRegister(int startAddress, int length) : base(startAddress, length)
         {
             outData = new Deque<byte>();
+            inData = new Queue<byte>();
+            currentFile = new CH376FileInfo();
+            currentFile.path = Root;
         }
 
         public override byte ReadByte(int addr)
@@ -166,10 +177,12 @@ namespace FoenixIDE.Simulator.Devices.SDCard
             if (address == SDCARD_CMD)
             {
                 currentCommand = 0;
+                inData.Clear();
+
                 switch ((SDCommand)value)
                 {
                     case SDCommand.CHECK_EXIST:
-                        outData.PushRight((byte)SDResponse.CMD_RET_SUCCESS);
+                        currentCommand = SDCommand.CHECK_EXIST;
                         return;
                     case SDCommand.SET_USB_MODE:
                         currentCommand = (SDCommand)value;
@@ -180,13 +193,32 @@ namespace FoenixIDE.Simulator.Devices.SDCard
                         interruptState = SDInterruptState.USB_INT_NONE;
                         return;
                     case SDCommand.DISK_MOUNT:
-                        mounted = true;
-                        interruptState = SDInterruptState.USB_INT_SUCCESS;
+                        if (SDCardInserted)
+                            interruptState = SDInterruptState.USB_INT_SUCCESS;
+                        else
+                            interruptState = SDInterruptState.USB_INT_DISCONNECT;
                         SetInterrupt(true);
                         return;
                     case SDCommand.SET_FILE_NAME:
-                        currentFile = new CH376FileInfo();
-                        currentFile.path = ".";
+                        /*
+                        This is used to open both folder and directory's 
+                        The name parameter is max 14 char (ex: /FILENAME.EXT\0)
+                        To navigate to deeper folder structures this has be called repeatedly
+                        Only one “/” or “\”, open root directory; The first character is “/” or “\”, and the following is file name, file in root directory; 
+                        File name as character, means file in current directory. 
+                        For example, for FILENAME.EXT in root directory, use “/ FILENAME.EXT\0” to set, 14 characters in totally, “\0” means 0 by C language, 
+                        as end character.”/” means in root directory.Use “\\” as root directory in C language.Another, the file has three sub - directory \YEAR2004\MONTH05.NEW\DATE18\ADC.TXT, open as following:  
+                        use “/ YEAR2004①\0” to set file name(directory name), 
+                        use CMD_FILE_OPEN to open the first directory; 
+                        use “MONTH05.NEW②\0” to set file name(directory name), 
+                        use CMD_FILE_OPEN to open the second directory; 
+                        use “DATE18③\0” to set file name(directory name), 
+                        use CMD_FILE_OPEN to open the third directory; 
+                        use “ADC.TXT④\0” to set file name(directory name), 
+                        use CMD_FILE_OPEN to open the final file;
+                        */
+                        //currentFile = new CH376FileInfo();
+                        //currentFile.path = Root;
                         currentCommand = SDCommand.SET_FILE_NAME;
                         return;
                     case SDCommand.FILE_OPEN:
@@ -201,7 +233,7 @@ namespace FoenixIDE.Simulator.Devices.SDCard
                                 interruptState = (SDInterruptState)0x1d;  // docs say ERR_OPEN_DIR but kernel expects
                                                                           // USB_INT_DISK_READ
 
-                                currentFile.directoryIterator = currentFile.directory.GetFileSystemInfos().GetEnumerator();
+                                currentFile.directoryIterator = currentFile.directory.GetFileSystemInfos(directoryFilter).GetEnumerator();
                                 //currentFile.directory_iterator =
                                 //    fs::directory_iterator(currentFile.entry);
                                 //auto end = fs::directory_iterator();
@@ -228,9 +260,12 @@ namespace FoenixIDE.Simulator.Devices.SDCard
                                 interruptState = SDInterruptState.USB_INT_SUCCESS;
                                 return;
                             }
+
                             if (currentFile.byte_seek_request != null)
                                 currentFile.byte_seek_request.Reset();
+
                             SetInterrupt(true);
+
                             return;
                         }
                     case SDCommand.FILE_CLOSE:
@@ -304,28 +339,60 @@ namespace FoenixIDE.Simulator.Devices.SDCard
 
             if (address == SDCARD_DATA)
             {
+                inData.Enqueue(value);
+
                 switch (currentCommand)
                 {
+                    case SDCommand.CHECK_EXIST:
+                        // output from exist should be binary exor from input.
+                        outData.PushRight((byte)(value ^ 0xFF));
+                        return;
                     case SDCommand.SET_USB_MODE:
                         //CHECK_EQ(value, 0x03) << "SET_USB_MODE for invalid mode (" << value << ")";
                         outData.PushRight((byte)SDResponse.CMD_RET_SUCCESS);
                         outData.PushRight(0);  // byte 2;
                         return;
                     case SDCommand.SET_FILE_NAME:
+                        // How does actual hardware handle errors?
+                        if (inData.Count >= 14)
+                            throw new Exception("Illegal file name value to long.");
+
                         if (value == 0)
                         {
-                            currentFile.directory = new DirectoryInfo(currentFile.path);
-                            currentFile.file = new FileInfo(currentFile.path);
-                            currentFile.path = "";
+                            string path = inData.DequeueString<byte>();
+                            bool rooted = path.StartsWith("/") || path.StartsWith("\\");
+
+
+                            if (path.EndsWith("*"))
+                            {
+                                currentFile.enumerateMode = true;
+                                if (rooted)
+                                {
+                                    directoryFilter = path.Substring(1, path.Length - 1);
+                                    currentFile.directory = new DirectoryInfo(Root);
+                                    currentFile.file = new FileInfo(Root);
+                                }
+                                else
+                                    directoryFilter = path;
+                            }
+                            else
+                            {
+                                directoryFilter = "*";
+                                if (rooted)
+                                {
+                                    currentFile.directory = new DirectoryInfo(Path.Combine(Root, path));
+                                    currentFile.file = new FileInfo(Path.Combine(Root, path));
+                                }
+                                else
+                                {
+                                    currentFile.directory = new DirectoryInfo(Path.Combine(Root, currentFile.directory.Name, path));
+                                    currentFile.file = new FileInfo(Path.Combine(Root, currentFile.directory.Name, path));
+                                }
+                            }
                             currentCommand = 0;
+                            
                             return;
                         }
-                        if (value == '*')
-                        {
-                            currentFile.enumerateMode = true;
-                            return;
-                        }
-                        currentFile.path = currentFile.path + (char)value;
                         break;
                     case SDCommand.FILE_CLOSE:
                         // value? "Update or not" ?

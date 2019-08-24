@@ -10,44 +10,53 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FoenixIDE.Simulator.UI
+namespace FoenixIDE.Simulator.UI.SDCardDebugger
 {
     public partial class SDCardWindow : Form
     {
-        FoenixSystem system;
+        private long commandCounter = 0;
+        private int readByteCouter = 0;
 
         public SDCardWindow()
         {
             InitializeComponent();
-        }
+            rootTextBox.Text = FoenixSystem.Current.Memory.SDCARD.Root;
 
-        public void SetSystem(FoenixSystem system)
-        {
-            this.system = system;
+            dataRichTextBox.SelectionTabs = new int[] { 30, 100, 300, 400 };
+            //dataRichTextBox.AppendText("Dir\tC nr.\tData");
 
-            this.system.Memory.SDCARD.OnRead += SDCARD_OnRead;
-            this.system.Memory.SDCARD.OnWrite += SDCARD_OnWrite;
-            //registerDisplay1.CPU = kernel.CPU;
-            //UpdateQueue();
+            FoenixSystem.Current.Memory.SDCARD.OnRead += SDCARD_OnRead;
+            FoenixSystem.Current.Memory.SDCARD.OnWrite += SDCARD_OnWrite;
         }
 
         private void SDCARD_OnWrite(object sender, Devices.SDCard.SDCardWriteEvent e)
         {
             //Debug.WriteLine($"Write address: {e.Address}, value: {e.Value}");
 
-            this.Invoke(new MethodInvoker(delegate () {
+            this.Invoke(new MethodInvoker(delegate () 
+            {
                 switch (e.Address)
                 {
                     case SDCardRegister.SDCARD_CMD:
-                        SDCardLogTextBox.AppendText($"Write command: {Enum.GetName(typeof(SDCommand), e.Value)}\r\n");
+                        commandTextBox.Text = Enum.GetName(typeof(SDCommand), e.Value);
+                        commandCounter++;
+                        commandCounterTextBox.Text = commandCounter.ToString();
+                        if (readByteCouter > 0)
+                            dataRichTextBox.AppendText("\r\n");
+                        readByteCouter = 0;
+                        dataRichTextBox.SelectionBackColor = Color.Green;
+                        dataRichTextBox.AppendText($"<\t{commandCounter}\tcommand: {(Enum.GetName(typeof(SDCommand), e.Value)):X2}");
                         break;
                     case SDCardRegister.SDCARD_DATA:
-                        SDCardLogTextBox.AppendText($"Write data: {e.Value}, {(e.Value >= 32 ? (char)e.Value : ' ')}\r\n");
+                        dataRichTextBox.SelectionBackColor = Color.Gray;
+                        dataRichTextBox.AppendText($"<\t{commandCounter}\tdata: {e.Value:X2}, {(e.Value >= 32 ? (char)e.Value : ' ')}");
                         break;
                     default:
-                        SDCardLogTextBox.AppendText($"Write to unknown address {e.Address}\r\n");
+                        dataRichTextBox.SelectionBackColor = Color.Red;
+                        dataRichTextBox.AppendText($"<\tunknown address {e.Address}");
                         break;
                 }
+                dataRichTextBox.AppendText("\r\n");
             }));
         }
 
@@ -59,16 +68,41 @@ namespace FoenixIDE.Simulator.UI
                 switch (e.Address)
                 {
                     case SDCardRegister.SDCARD_CMD:
-                        SDCardLogTextBox.AppendText($"Read from command: {e.Value}\r\n");
+                        dataRichTextBox.SelectionBackColor = Color.Yellow;
+                        dataRichTextBox.AppendText($"\r\n> command: {e.Value:X2}");
                         break;
                     case SDCardRegister.SDCARD_DATA:
-                        SDCardLogTextBox.AppendText($"Read from data: {e.Value}, {(e.Value >= 32 ? (char)e.Value : ' ')}\r\n");
+                        dataRichTextBox.SelectionBackColor = Color.CadetBlue;
+                        if (readByteCouter == 0 || readByteCouter == 36)
+                        {
+                            readByteCouter = 0;
+                            dataRichTextBox.AppendText($"\r\n>\t{commandCounter}\t");
+                        }
+                        dataRichTextBox.AppendText($"{e.Value:X2} ");
+                        readByteCouter++;
+                        //, {(e.Value >= 32 ? (char)e.Value : ' ')}
                         break;
                     default:
-                        SDCardLogTextBox.AppendText($"Read from unknown address {e.Address}\r\n");
+                        dataRichTextBox.SelectionBackColor = Color.Red;
+                        dataRichTextBox.AppendText($"\r\n> unknown address {e.Address}\r\n");
                         break;
                 }
             }));
+        }
+
+        private void BrowseButton_Click(object sender, EventArgs e)
+        {
+            if (rootBrowserDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                FoenixSystem.Current.Memory.SDCARD.Root = rootBrowserDialog.SelectedPath;
+            }
+
+            rootTextBox.Text = FoenixSystem.Current.Memory.SDCARD.Root;
+        }
+
+        private void IsMountedCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            FoenixSystem.Current.Memory.SDCARD.SDCardInserted = isInsertedCheckBox.Checked;
         }
     }
 }

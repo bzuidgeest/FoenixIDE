@@ -3,6 +3,7 @@ using FoenixIDE.Display;
 using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.Simulator.UI;
+using FoenixIDE.Simulator.UI.SDCardDebugger;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -100,7 +101,6 @@ namespace FoenixIDE.UI
                     Top = Screen.PrimaryScreen.WorkingArea.Top,
                 };
                 sDCardWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - sDCardWindow.Width;
-                sDCardWindow.SetSystem(system);
                 sDCardWindow.Show();
             }
             else

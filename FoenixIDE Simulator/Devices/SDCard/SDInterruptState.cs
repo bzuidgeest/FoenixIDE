@@ -16,6 +16,16 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         USB_INT_USB_READY = 0x18,
         USB_INT_DISK_READ = 0x1d,
         USB_INT_DISK_WRITE = 0x1e,
-        USB_INT_DISK_ERR = 0x1f
+        USB_INT_DISK_ERR = 0x1f,
+        ERR_OPEN_DIR = 0x41,
+        ERR_MISS_FILE = 0x42,
+        ERR_FOUND_NAME = 0x43,
+        ERR_DISK_DISCON = 0x82,
+        ERR_LARGE_SECTOR = 0x84,
+        ERR_TYPE_ERROR = 0x92,
+        ERR_BPB_ERROR = 0xA1,
+        ERR_DISK_FULL = 0xB1,
+        ERR_FDT_OVER = 0xB2,
+        ERR_FILE_CLOSE = 0xB4
     };
 }

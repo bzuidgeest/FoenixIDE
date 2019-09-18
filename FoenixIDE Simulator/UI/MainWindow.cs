@@ -525,6 +525,12 @@ namespace FoenixIDE.UI
         {
             ShowSDCardWindow();
         }
+
+        private void PreferencesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ConfigurationWindow configurationWindow = new ConfigurationWindow();
+            configurationWindow.ShowDialog();
+        }
     }
 }
 

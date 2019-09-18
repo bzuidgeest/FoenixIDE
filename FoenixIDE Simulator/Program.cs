@@ -1,8 +1,6 @@
-﻿using FoenixIDE.UI;
+﻿using FoenixIDE.Simulator;
+using FoenixIDE.UI;
 using System;
-using System.Collections.Generic;
-
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FoenixIDE
@@ -15,6 +13,15 @@ namespace FoenixIDE
         [STAThread]
         static void Main()
         {
+            try
+            {
+                Configuration.Current.Save();
+            }
+            catch
+            {
+                throw new Exception($"Cannot save file: {Configuration.configFilename}");
+            }
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainWindow());

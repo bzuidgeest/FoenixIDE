@@ -37,7 +37,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WAVE_TABLEMUL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -61,7 +61,13 @@
     <Reference Include="DequeNet, Version=1.0.1.0, Culture=neutral, PublicKeyToken=6c367a1c27d122c9, processorArchitecture=MSIL">
       <HintPath>..\packages\DequeNET.1.0.1\lib\portable-net4+win8\DequeNet.dll</HintPath>
     </Reference>
+    <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
+      <HintPath>..\packages\ini-parser.2.5.2\lib\net20\INIFileParser.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -72,7 +78,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Basic\ScanCodes.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="DeviceEnum.cs" />
+    <Compile Include="Devices\Audio\Enumerations.cs" />
+    <Compile Include="Devices\Audio\HardSynth\OPL\OPLXLPT\LPT.cs" />
+    <Compile Include="Devices\Audio\HardSynth\OPL\OPLXLPT\OPLXLPT.cs" />
+    <Compile Include="Devices\Audio\IOPL.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxChannel.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxChip.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxOperator.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxOPL.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxShared.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\Enumerations.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\OPLChip.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\OPLTimer.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\Nuked.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedData.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedEnumerations.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedOPL.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedSlot.cs" />
     <Compile Include="Devices\InterruptController.cs" />
     <Compile Include="Devices\KeyboardRegister.cs" />
     <Compile Include="Devices\MPU401.cs" />
@@ -114,6 +138,12 @@
       <DependentUpon>Gpu.cs</DependentUpon>
     </Compile>
     <Compile Include="QueueExtensions.cs" />
+    <Compile Include="UI\ConfigurationWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\ConfigurationWindow.Designer.cs">
+      <DependentUpon>ConfigurationWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\CPUWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +222,9 @@
     <EmbeddedResource Include="Display\Gpu.resx">
       <DependentUpon>Gpu.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\ConfigurationWindow.resx">
+      <DependentUpon>ConfigurationWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\CPUWindow.resx">
       <DependentUpon>CPUWindow.cs</DependentUpon>
     </EmbeddedResource>
@@ -259,6 +292,9 @@
   <ItemGroup>
     <Content Include="icon.ico" />
     <None Include="Resources\foenix-96x96.png" />
+    <Content Include="inpout32.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\PET-ASCII.png" />
   </ItemGroup>
   <ItemGroup>

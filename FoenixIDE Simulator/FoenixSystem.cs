@@ -10,6 +10,7 @@ using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.UI;
 using FoenixIDE.Simulator.Devices.SDCard;
+using FoenixIDE.Simulator;
 
 namespace FoenixIDE
 {
@@ -23,7 +24,7 @@ namespace FoenixIDE
         public DeviceEnum OutputDevice = DeviceEnum.Screen;
 
         public Thread CPUThread = null;
-        private String defaultKernel = @"ROMs\kernel.hex";
+        //private String defaultKernel = @"ROMs\kernel.hex";
 
         public ResourceChecker Resources;
         public Processor.Breakpoints Breakpoints;
@@ -111,24 +112,24 @@ namespace FoenixIDE
             // This fontset is loaded just in case the kernel doesn't provide one.
             gpu.LoadFontSet("Foenix", @"Resources\Bm437_PhoenixEGA_8x8.bin", 0, CharacterSet.CharTypeCodes.ASCII_PET, CharacterSet.SizeCodes.Size8x8);
 
-            if (defaultKernel.EndsWith(".fnxml", true, null))
+            if (Configuration.Current.StartUpHexFile.EndsWith(".fnxml", true, null))
             {
                 FoeniXmlFile fnxml = new FoeniXmlFile(Memory, Resources, CPUWindow.Instance.breakpoints);
-                fnxml.Load(defaultKernel);
+                fnxml.Load(Configuration.Current.StartUpHexFile);
             }
             else
             {
-                defaultKernel = HexFile.Load(Memory, defaultKernel);
-                if (defaultKernel != null)
+                Configuration.Current.StartUpHexFile = HexFile.Load(Memory, Configuration.Current.StartUpHexFile);
+                if (Configuration.Current.StartUpHexFile != null)
                 {
                     if (ResetMemory)
                     {
-                        lstFile = new ListFile(defaultKernel);
+                        lstFile = new ListFile(Configuration.Current.StartUpHexFile);
                     }
                     else
                     {
                         // TODO: We should really ensure that there are no duplicated PC in the list
-                        ListFile tempList = new ListFile(defaultKernel);
+                        ListFile tempList = new ListFile(Configuration.Current.StartUpHexFile);
                         lstFile.Lines.InsertRange(0, tempList.Lines);
                     }
                 }
@@ -163,7 +164,7 @@ namespace FoenixIDE
 
         public void SetKernel(String value)
         {
-            defaultKernel = value;
+            Configuration.Current.StartUpHexFile = value;
         }
     }
 }

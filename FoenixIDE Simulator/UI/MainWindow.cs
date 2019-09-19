@@ -20,6 +20,7 @@ namespace FoenixIDE.UI
 
         public UI.CPUWindow debugWindow;
         public SDCardWindow sDCardWindow;
+        public OPLWindow oPLWindow;
         public MemoryWindow memoryWindow;
         public UploaderWindow uploaderWindow;
         private TileEditor tileEditor;
@@ -106,6 +107,24 @@ namespace FoenixIDE.UI
             else
             {
                 sDCardWindow.BringToFront();
+            }
+        }
+
+        private void ShowOPLWindow()
+        {
+            if (oPLWindow == null || oPLWindow.IsDisposed)
+            {
+                system.CPU.DebugPause = true;
+                oPLWindow = new OPLWindow()
+                {
+                    Top = Screen.PrimaryScreen.WorkingArea.Top,
+                };
+                oPLWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - oPLWindow.Width;
+                oPLWindow.Show();
+            }
+            else
+            {
+                oPLWindow.BringToFront();
             }
         }
 
@@ -530,6 +549,11 @@ namespace FoenixIDE.UI
         {
             ConfigurationWindow configurationWindow = new ConfigurationWindow();
             configurationWindow.ShowDialog();
+        }
+
+        private void OPLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowOPLWindow();
         }
     }
 }

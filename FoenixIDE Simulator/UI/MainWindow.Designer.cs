@@ -43,6 +43,7 @@ namespace FoenixIDE.UI
             this.openHexFileWoZeroingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadFNXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +64,7 @@ namespace FoenixIDE.UI
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.oPLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -175,6 +176,13 @@ namespace FoenixIDE.UI
             this.saveProjectToolStripMenuItem.Text = "&Save Project...";
             this.saveProjectToolStripMenuItem.Click += new System.EventHandler(this.SaveProjectToolStripMenuItem_Click);
             // 
+            // preferencesToolStripMenuItem
+            // 
+            this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
+            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.preferencesToolStripMenuItem.Text = "&Preferences";
+            this.preferencesToolStripMenuItem.Click += new System.EventHandler(this.PreferencesToolStripMenuItem_Click);
+            // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
@@ -219,7 +227,8 @@ namespace FoenixIDE.UI
             this.cPUToolStripMenuItem,
             this.memoryToolStripMenuItem,
             this.terminalToolStripMenuItem,
-            this.sDCardToolStripMenuItem});
+            this.sDCardToolStripMenuItem,
+            this.oPLToolStripMenuItem});
             this.windowsToolStripMenuItem.Name = "windowsToolStripMenuItem";
             this.windowsToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
             this.windowsToolStripMenuItem.Text = "&Windows";
@@ -227,28 +236,28 @@ namespace FoenixIDE.UI
             // cPUToolStripMenuItem
             // 
             this.cPUToolStripMenuItem.Name = "cPUToolStripMenuItem";
-            this.cPUToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.cPUToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.cPUToolStripMenuItem.Text = "&CPU";
             this.cPUToolStripMenuItem.Click += new System.EventHandler(this.CPUToolStripMenuItem_Click);
             // 
             // memoryToolStripMenuItem
             // 
             this.memoryToolStripMenuItem.Name = "memoryToolStripMenuItem";
-            this.memoryToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.memoryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.memoryToolStripMenuItem.Text = "&Memory";
             this.memoryToolStripMenuItem.Click += new System.EventHandler(this.MemoryToolStripMenuItem_Click);
             // 
             // terminalToolStripMenuItem
             // 
             this.terminalToolStripMenuItem.Name = "terminalToolStripMenuItem";
-            this.terminalToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.terminalToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.terminalToolStripMenuItem.Text = "&Terminal";
             this.terminalToolStripMenuItem.Click += new System.EventHandler(this.TerminalToolStripMenuItem_Click);
             // 
             // sDCardToolStripMenuItem
             // 
             this.sDCardToolStripMenuItem.Name = "sDCardToolStripMenuItem";
-            this.sDCardToolStripMenuItem.Size = new System.Drawing.Size(119, 22);
+            this.sDCardToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.sDCardToolStripMenuItem.Text = "&SDCard";
             this.sDCardToolStripMenuItem.Click += new System.EventHandler(this.SDCardToolStripMenuItem_Click);
             // 
@@ -338,12 +347,12 @@ namespace FoenixIDE.UI
             this.panel4.Size = new System.Drawing.Size(686, 16);
             this.panel4.TabIndex = 6;
             // 
-            // preferencesToolStripMenuItem
+            // oPLToolStripMenuItem
             // 
-            this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
-            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
-            this.preferencesToolStripMenuItem.Text = "&Preferences";
-            this.preferencesToolStripMenuItem.Click += new System.EventHandler(this.PreferencesToolStripMenuItem_Click);
+            this.oPLToolStripMenuItem.Name = "oPLToolStripMenuItem";
+            this.oPLToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.oPLToolStripMenuItem.Text = "&OPL";
+            this.oPLToolStripMenuItem.Click += new System.EventHandler(this.OPLToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -413,6 +422,7 @@ namespace FoenixIDE.UI
         private System.Windows.Forms.ToolStripMenuItem terminalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sDCardToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem preferencesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem oPLToolStripMenuItem;
     }
 }
 

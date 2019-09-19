@@ -16,6 +16,9 @@ namespace FoenixIDE.Simulator.Devices
 
         IOPL oPL;
 
+        public event EventHandler<BasicRegisterEvent> OnRead;
+        public event EventHandler<BasicRegisterEvent> OnWrite;
+
         public OPL2(int StartAddress, int Length) : base(StartAddress, Length)
         {
             switch (oPLSystem)
@@ -40,16 +43,21 @@ namespace FoenixIDE.Simulator.Devices
             oPL.Init(44100);
         }
 
-        public override byte ReadByte(int Address)
+        public override byte ReadByte(int address)
         {
-            return base.ReadByte(Address);
+            byte data = base.ReadByte(address);
+            OnRead?.Invoke(this, new BasicRegisterEvent(address, data));
+
+            return data;
         }
 
-        public override void WriteByte(int Address, byte Value)
+        public override void WriteByte(int address, byte value)
         {
-            base.WriteByte(Address, Value);
+            base.WriteByte(address, value);
 
-            oPL.WriteReg(Address, Value);
+            OnWrite?.Invoke(this, new BasicRegisterEvent(address, value));
+
+            oPL.WriteReg(address, value);
         }
     }
 }

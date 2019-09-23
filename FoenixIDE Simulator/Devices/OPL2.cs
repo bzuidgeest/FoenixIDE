@@ -39,12 +39,13 @@ namespace FoenixIDE.Simulator.Devices
                     this.oPL = o;
 
                     WaveFormat = new WaveFormat(44100, 16, 1);
-                    //Thread t = new Thread(SampleReader);
+                    Thread t = new Thread(SampleReader);
                     //t.Start();
                     soundOutput = new WaveOutEvent();
-                    //soundOutput.Init(this);
 
+                    //soundOutput.Init(this);
                     soundOutput.Init(o);
+
                     soundOutput.Play();
                     break;
                 case OPLSystem.Nuked:
@@ -73,22 +74,27 @@ namespace FoenixIDE.Simulator.Devices
 
         private void SampleReader()
         {
-            int counter = 0;
-            short[] buffer = new short[1];
+            int counter = 0, prevCounter = 0;
+            byte[] buffer = new byte[1024];
             while(true)
             {
-                if (FoenixSystem.Current.CPU.CycleCounter >= 317)
+                counter = FoenixSystem.Current.CPU.CycleCounter;
+                //if (counter - prevCounter >= 317)
+                if (counter - prevCounter >= 324608)
                 {
-                    oPL.ReadBuffer(buffer, 0, 1);
-                    //stream.Write(MemoryMarshal.Cast<short, byte>(buffer).ToArray(), 0, 2);
-                    
-                    sampleQueue.Enqueue((byte)(buffer[0]));
-                    sampleQueue.Enqueue((byte)(buffer[0] >> 8));
-                    counter -= 317;
+                    oPL.Read(buffer, 0, 1024);
+
+                    //sampleQueue.Enqueue(buffer[0]);
+                    //sampleQueue.Enqueue(buffer[1]);
+                    buffer.ToList().ForEach(x => sampleQueue.Enqueue(x));
+
+                    //counter -= 317;
+
                     if (soundOutput.PlaybackState == PlaybackState.Stopped && sampleQueue.Count > 30000)
                     {
                         soundOutput.Play();
                     }
+                    prevCounter = counter;
                 }
             }
         }

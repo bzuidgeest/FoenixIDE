@@ -239,9 +239,14 @@ namespace FoenixIDE.Simulator.Devices.Audio.HardSynth.OPL.OPLXLPT
             }
         }
 
-        public void ReadBuffer(short[] buffer, int pos, int length)
+        //public void ReadBuffer(short[] buffer, int pos, int length)
+        //{
+        //    throw new Exception("ReadBuffer not supported on Hardware OPL");
+        //}
+
+        int IOPL.Read(byte[] buffer, int offset, int count)
         {
-            throw new Exception("ReadBuffer not supported on Hardware OPL");
+            throw new NotImplementedException();
         }
     }
 }

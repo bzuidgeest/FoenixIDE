@@ -124,47 +124,47 @@ namespace FoenixIDE.Simulator.Devices.Audio.SoftSynth.OPL.DOSBox
             }
         }
 
-        public void ReadBuffer(short[] buffer, int pos, int length)
-        {
-            // For stereo OPL cards, we divide the sample count by 2,
-            // to match stereo AudioStream behavior.
-            if (_type != OPLType.Opl2)
-                length >>= 1;
+        //public void ReadBuffer(short[] buffer, int pos, int length)
+        //{
+        //    // For stereo OPL cards, we divide the sample count by 2,
+        //    // to match stereo AudioStream behavior.
+        //    if (_type != OPLType.Opl2)
+        //        length >>= 1;
 
-            const uint bufferLength = 512;
-            var tempBuffer = new int[bufferLength * 2];
+        //    const uint bufferLength = 512;
+        //    var tempBuffer = new int[bufferLength * 2];
 
-            if (_emulator.opl3Active != 0)
-            {
-                while (length > 0)
-                {
-                    uint readSamples = (uint)Math.Min(length, bufferLength);
+        //    if (_emulator.opl3Active != 0)
+        //    {
+        //        while (length > 0)
+        //        {
+        //            uint readSamples = (uint)Math.Min(length, bufferLength);
 
-                    _emulator.GenerateBlock3(readSamples, tempBuffer);
+        //            _emulator.GenerateBlock3(readSamples, tempBuffer);
 
-                    for (uint i = 0; i < (readSamples << 1); ++i)
-                        buffer[pos + i] = (short)tempBuffer[i];
+        //            for (uint i = 0; i < (readSamples << 1); ++i)
+        //                buffer[pos + i] = (short)tempBuffer[i];
 
-                    pos += (int)(readSamples << 1);
-                    length -= (int)readSamples;
-                }
-            }
-            else
-            {
-                while (length > 0)
-                {
-                    uint readSamples = (uint)Math.Min(length, bufferLength << 1);
+        //            pos += (int)(readSamples << 1);
+        //            length -= (int)readSamples;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        while (length > 0)
+        //        {
+        //            uint readSamples = (uint)Math.Min(length, bufferLength << 1);
 
-                    _emulator.GenerateBlock2(readSamples, tempBuffer);
+        //            _emulator.GenerateBlock2(readSamples, tempBuffer);
 
-                    for (var i = 0; i < readSamples; ++i)
-                        buffer[pos + i] = (short)tempBuffer[i];
+        //            for (var i = 0; i < readSamples; ++i)
+        //                buffer[pos + i] = (short)tempBuffer[i];
 
-                    pos += (int)readSamples;
-                    length -= (int)readSamples;
-                }
-            }
-        }
+        //            pos += (int)readSamples;
+        //            length -= (int)readSamples;
+        //        }
+        //    }
+        //}
 
         public int Read(byte[] buffer, int offset, int count)
         {

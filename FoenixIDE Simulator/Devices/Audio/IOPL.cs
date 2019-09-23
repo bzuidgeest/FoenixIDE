@@ -12,7 +12,8 @@ namespace FoenixIDE.Simulator.Devices.Audio
 
         byte ReadRegister(int register);
 
-        void ReadBuffer(short[] buffer, int pos, int length);
+        //void ReadBuffer(short[] buffer, int pos, int length);
+        int Read(byte[] buffer, int offset, int count);
 
         bool IsStereo { get; }
     }

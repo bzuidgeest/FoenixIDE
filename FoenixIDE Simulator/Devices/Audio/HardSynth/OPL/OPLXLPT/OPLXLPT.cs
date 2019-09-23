@@ -137,7 +137,7 @@ namespace FoenixIDE.Simulator.Devices.Audio.HardSynth.OPL.OPLXLPT
             return;
         }
 
-        public byte Read(int port)
+        public byte ReadRegister(int port)
         {
             return LPT.inportb((short)port);
         }

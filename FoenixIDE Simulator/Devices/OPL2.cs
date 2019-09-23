@@ -1,20 +1,30 @@
 ﻿using FoenixIDE.Simulator.Devices.Audio;
 using FoenixIDE.Simulator.Devices.Audio.HardSynth.OPL.OPLXLPT;
 using FoenixIDE.Simulator.Devices.Audio.SoftSynth.OPL.DOSBox;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FoenixIDE.Simulator.Devices
 {
-    public class OPL2 : MemoryLocations.MemoryRAM
+    public class OPL2 : MemoryLocations.MemoryRAM, IWaveProvider
     {
-        OPLSystem oPLSystem = Configuration.Current.OPLSystem;
-        int parallelPort = Configuration.Current.OPLParallelPort;
+        private OPLSystem oPLSystem = Configuration.Current.OPLSystem;
+        private int parallelPort = Configuration.Current.OPLParallelPort;
+        private MemoryStream stream = new MemoryStream();
+        private Queue<byte> sampleQueue = new Queue<byte>();
 
-        IOPL oPL;
+        private IOPL oPL;
+        public byte[] shadowOPL = new byte[512];
+
+        private WaveOutEvent soundOutput;
+        public WaveFormat WaveFormat { get; private set; }
 
         public event EventHandler<BasicRegisterEvent> OnRead;
         public event EventHandler<BasicRegisterEvent> OnWrite;
@@ -24,7 +34,18 @@ namespace FoenixIDE.Simulator.Devices
             switch (oPLSystem)
             {
                 case OPLSystem.DOSBox:
-                    oPL = new DosBoxOPL(OPLType.Opl3);
+                    DosBoxOPL o = new DosBoxOPL(OPLType.Opl3);
+                    o.Init(44100);
+                    this.oPL = o;
+
+                    WaveFormat = new WaveFormat(44100, 16, 1);
+                    //Thread t = new Thread(SampleReader);
+                    //t.Start();
+                    soundOutput = new WaveOutEvent();
+                    //soundOutput.Init(this);
+
+                    soundOutput.Init(o);
+                    soundOutput.Play();
                     break;
                 case OPLSystem.Nuked:
                     // not yet ready
@@ -40,7 +61,43 @@ namespace FoenixIDE.Simulator.Devices
                     break;
             }
 
+
+            for (int i = 0; i < 512; i++)
+            {
+                shadowOPL[i] = oPL.ReadRegister(i);
+            }
+
             oPL.Init(44100);
+        }
+
+
+        private void SampleReader()
+        {
+            int counter = 0;
+            short[] buffer = new short[1];
+            while(true)
+            {
+                if (FoenixSystem.Current.CPU.CycleCounter >= 317)
+                {
+                    oPL.ReadBuffer(buffer, 0, 1);
+                    //stream.Write(MemoryMarshal.Cast<short, byte>(buffer).ToArray(), 0, 2);
+                    
+                    sampleQueue.Enqueue((byte)(buffer[0]));
+                    sampleQueue.Enqueue((byte)(buffer[0] >> 8));
+                    counter -= 317;
+                    if (soundOutput.PlaybackState == PlaybackState.Stopped && sampleQueue.Count > 30000)
+                    {
+                        soundOutput.Play();
+                    }
+                }
+            }
+        }
+
+        // Function to read from shadow registers without disturbing the emulation
+        // For the emulation this read does not exist.
+        public byte ReadShadowByte(int address)
+        {
+            return (shadowOPL[address]);
         }
 
         public override byte ReadByte(int address)
@@ -53,11 +110,21 @@ namespace FoenixIDE.Simulator.Devices
 
         public override void WriteByte(int address, byte value)
         {
+            shadowOPL[address] = value;
+
             base.WriteByte(address, value);
 
             OnWrite?.Invoke(this, new BasicRegisterEvent(address, value));
 
             oPL.WriteReg(address, value);
+        }
+
+        public int Read(byte[] buffer, int offset, int count)
+        {
+            int samplesReady = Math.Min(sampleQueue.Count, count);
+            byte[] x = sampleQueue.DequeueChunk<byte>(samplesReady).ToArray();
+            x.CopyTo(buffer, 0);
+            return x.Length;
         }
     }
 }

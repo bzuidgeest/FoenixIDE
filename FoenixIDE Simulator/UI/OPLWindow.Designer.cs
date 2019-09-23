@@ -36,7 +36,7 @@
             // 
             this.PictureBoxOPLStatus.Location = new System.Drawing.Point(12, 47);
             this.PictureBoxOPLStatus.Name = "PictureBoxOPLStatus";
-            this.PictureBoxOPLStatus.Size = new System.Drawing.Size(791, 406);
+            this.PictureBoxOPLStatus.Size = new System.Drawing.Size(853, 568);
             this.PictureBoxOPLStatus.TabIndex = 0;
             this.PictureBoxOPLStatus.TabStop = false;
             this.PictureBoxOPLStatus.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBoxOPLStatus_Paint);
@@ -45,7 +45,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(815, 465);
+            this.ClientSize = new System.Drawing.Size(877, 627);
             this.Controls.Add(this.PictureBoxOPLStatus);
             this.Name = "OPLWindow";
             this.Text = "OPLStatusWindow";

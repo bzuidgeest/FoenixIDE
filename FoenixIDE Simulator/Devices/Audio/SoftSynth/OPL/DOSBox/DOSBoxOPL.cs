@@ -270,7 +270,7 @@ namespace FoenixIDE.Simulator.Devices.Audio.SoftSynth.OPL.DOSBox
             _emulator.WriteReg(fullReg, val);
         }
 
-        private byte read(int port)
+        public byte ReadRegister(int port)
         {
             switch (_type)
             {

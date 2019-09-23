@@ -20,32 +20,47 @@ namespace FoenixIDE.Simulator.UI
 
     public partial class OPLWindow : Form
     {
-        public OPLDisplayMode DisplayMode { get; set; } = OPLDisplayMode.NOTES;
+        public OPLDisplayMode DisplayMode { get; set; } = OPLDisplayMode.REGS;
 
-        private byte[] shadow_opl = new byte[256];
-        private bool[] shadow_opl_written = new bool[256];
+        private byte[] shadow_opl = new byte[512];
+        private bool[] shadow_opl_written = new bool[512];
 
-        private char[] VGA = new char[80 * 50];
-        private Brush[] VGAColor = new Brush[80 * 50];
+        // "screen" was 80x50 in imfplay. Extended to 132
+        private const int screenWidth = 132;
+        private char[] VGA = new char[screenWidth * 50];
+        private Brush[] VGAColor = new Brush[screenWidth * 50];
         private int[] lastnotes = new int[9];
         private char[] hex = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
         private string[] dec = new string[] { " 0", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15" };
 
-        private SolidBrush C_LOW = new SolidBrush(Color.FromArgb(252, 36, 36)); //low-intensity color
-        private SolidBrush C_NORM = new SolidBrush(Color.FromArgb(72, 216, 252)); //normal color
-        private SolidBrush C_HI = new SolidBrush(Color.FromArgb(252, 252, 252)); //highlight color
-        private SolidBrush C_ACT = new SolidBrush(Color.FromArgb(216, 216, 36)); //active channel color
-        private SolidBrush C_NACT = new SolidBrush(Color.FromArgb(36, 36, 252)); //inactive channel color
+        private SolidBrush C_LOW = new SolidBrush(Color.DarkGray); //low-intensity color
+        private SolidBrush C_NORM = new SolidBrush(Color.Gray); //normal color
+        private SolidBrush C_HI = new SolidBrush(Color.White); //highlight color
+        private SolidBrush C_ACT = new SolidBrush(Color.Green); //active channel color
+        private SolidBrush C_NACT = new SolidBrush(Color.Red); //inactive channel color
+
+        private Font font;
 
         public OPLWindow()
         {
             InitializeComponent();
+
+            font = new Font("Consolas", 10, FontStyle.Regular, GraphicsUnit.Pixel);
+
+            byte b = 0;
+            for (int i = 0; i < 512; i++)
+            {
+                b = FoenixSystem.Current.Memory.OPL2.ReadShadowByte(i);
+                shadow_opl[i] = (byte)(b == 255 ? 0 : b);
+                shadow_opl_written[i] = (b == 255 ? false : true);
+            }
 
             //FoenixSystem.Current.Memory.OPL2.OnRead += OPL2_OnRead;
             FoenixSystem.Current.Memory.OPL2.OnWrite += OPL2_OnWrite;
 
             screen_init();
 
+            PictureBoxOPLStatus.BackColor = Color.Black;
             PictureBoxOPLStatus.Refresh();
         }
 
@@ -69,11 +84,23 @@ namespace FoenixIDE.Simulator.UI
 
         private void PictureBoxOPLStatus_Paint(object sender, PaintEventArgs e)
         {
-            for (int i = 0; i < 50; i++)
+            //int fontWidth = (int)Math.Ceiling(e.Graphics.MeasureString("X", font).Width);
+            //int fontWidth = TextRenderer.MeasureText("X", font).Width;
+            
+            for (int y = 0; y < 50; y++)
             {
-                //TextRenderer.DrawText(e.Graphics, )
-                e.Graphics.DrawString(VGA.AsSpan(i * 80, 80).ToString(), PictureBox.DefaultFont, new SolidBrush(PictureBox.DefaultForeColor), 20, i * 10);
+                for (int x = 0; x < 132; x++)
+                {
+                    //TextRenderer.DrawText(e.Graphics, )
+                    e.Graphics.DrawString(VGA[XY(x, y)].ToString(), font, VGAColor[XY(x, y)], 20 + (8 * x), y * 15);
+                }
             }
+
+            //for (int i = 0; i < 50; i++)
+            //{
+            //    //TextRenderer.DrawText(e.Graphics, )
+            //    e.Graphics.DrawString(VGA.AsSpan(i * screenWidth, screenWidth).ToString(), font, new SolidBrush(PictureBox.DefaultForeColor), 20, i * 15);
+            //}
         }
 
 
@@ -83,7 +110,7 @@ namespace FoenixIDE.Simulator.UI
         public int XY(int x, int y)
         {
             //return (2 * ((x) + 80 * (y)));
-            return ((x) + 80 * (y));
+            return ((x) + screenWidth * (y));
         }
 
 
@@ -91,6 +118,7 @@ namespace FoenixIDE.Simulator.UI
         private void puts_xy(string text, int x, int y, Brush color)
         {
             text.AsMemory().TryCopyTo(new Memory<char>(VGA, XY(x, y), text.Length));
+            VGAColor.AsSpan(XY(x, y), text.Length).Fill(color);
             //new Memory<char>(VGAColor, XY(x, y), text.Length).;
             //int vgaaddr = XY(x, y);
             //while (*text)
@@ -126,7 +154,8 @@ namespace FoenixIDE.Simulator.UI
             if (n > 158)
                 n = 158;
 
-            buffer = String.Format("%7.2f Hz %5.2f", f, n / 2.0f);
+            //buffer = String.Format("%7.2f Hz %5.2f", f, n / 2.0f);
+            buffer = String.Format("{0,7:f2} Hz {1,5:f2}f", f, n / 2.0f);
             puts_xy(buffer, 54, 2 * channel + CHAN_Y, C_NORM);
 
             if (DisplayMode == OPLDisplayMode.NOTES)
@@ -165,8 +194,16 @@ namespace FoenixIDE.Simulator.UI
             //raw data
             if (DisplayMode == OPLDisplayMode.REGS)
             {
-                VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = hex[data >> 4];
-                VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = hex[data & 0x0F];
+                if (reg < 255)
+                {
+                    VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = hex[data >> 4];
+                    VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = hex[data & 0x0F];
+                }
+                else
+                {
+                    VGA[XY(3 * (reg & 0x0F) + 50, 22 + ((reg & 0xF0) >> 4))] = hex[data >> 4];
+                    VGA[XY(3 * (reg & 0x0F) + 51, 22 + ((reg & 0xF0) >> 4))] = hex[data & 0x0F];
+                }
             }
 
 
@@ -191,7 +228,8 @@ namespace FoenixIDE.Simulator.UI
                         break;
 
                     puts_xy(ksl[data >> 6], 24, ch_line + CHAN_Y, C_NORM);
-                    buffer = String.Format("%5.2f",
+                    //buffer = String.Format("%5.2f",
+                    buffer = String.Format("{0,5:f2}",
                                 24.0f * ((data & 0x20) >> 5) +
                                 12.0f * ((data & 0x10) >> 4) +
                                 6.0f * ((data & 0x08) >> 3) +
@@ -223,7 +261,8 @@ namespace FoenixIDE.Simulator.UI
                     if (mch_line > 8)
                         break;
 
-                    buffer = String.Format("%4d", ((shadow_opl[reg + 0x10] & 0x03) << 8) | data);
+                    //buffer = String.Format("%4d", ((shadow_opl[reg + 0x10] & 0x03) << 8) | data);
+                    buffer = String.Format("{0,4:d}", ((shadow_opl[reg + 0x10] & 0x03) << 8) | data);
                     puts_xy(buffer, 56, 2 * mch_line + 1 + CHAN_Y, C_NORM);
                     print_freq(mch_line);
                     break;
@@ -233,9 +272,11 @@ namespace FoenixIDE.Simulator.UI
                         break;
 
                     puts_xy("KEY", 62, 2 * mch_line + 1 + CHAN_Y, (data & 0x20) > 0 ? C_HI : C_LOW);
-                    buffer = string.Format("%1d", (data >> 2) & 0x07);
+                    //buffer = string.Format("%1d", (data >> 2) & 0x07);
+                    buffer = string.Format("{0,1:d}", (data >> 2) & 0x07);
                     puts_xy(buffer, 53, 2 * mch_line + 1 + CHAN_Y, C_NORM);
-                    buffer = string.Format("%4d", ((data & 0x03) << 8) | shadow_opl[reg - 0x10]);
+                    //buffer = string.Format("%4d", ((data & 0x03) << 8) | shadow_opl[reg - 0x10]);
+                    buffer = string.Format("{0,4:d}", ((data & 0x03) << 8) | shadow_opl[reg - 0x10]);
                     puts_xy(buffer, 56, 2 * mch_line + 1 + CHAN_Y, C_NORM);
                     print_freq(mch_line);
                     break;
@@ -244,7 +285,8 @@ namespace FoenixIDE.Simulator.UI
                     if (mch_line > 8)
                         break;
 
-                    buffer = string.Format("%1d", (data >> 1) & 0x07);
+                    //buffer = string.Format("%1d", (data >> 1) & 0x07);
+                    buffer = string.Format("{0,1:d}", (data >> 1) & 0x07);
                     puts_xy(buffer, 67, 2 * mch_line + 1 + CHAN_Y, C_NORM);
                     puts_xy("CNT", 70, 2 * mch_line + 1 + CHAN_Y, (data & 0x01) > 0 ? C_HI : C_LOW);
                     break;
@@ -275,35 +317,12 @@ namespace FoenixIDE.Simulator.UI
             VGA[XY(19, 40)] = hex[rem & 0x0F];
         }
 
-        //void draw_logo(int x, int y)
-        //{
-        //    int r = 0, c = 0;
-        //    char* text = logo;
-        //    while (*text)
-        //    {
-        //        if (*text == '\n')
-        //        {
-        //            r++;
-        //            c = 0;
-        //        }
-        //        else
-        //        {
-        //            VGA[XY(x + c, y + r)] = *text != ' ' ? 219 : ' ';
-        //            VGA[XY(x + c++, y + r) + 1] = 15;
-        //        }
-
-        //        text++;
-        //    }
-
-        //    puts_xy("> imfplay "VERSION" by kvee", x + 15, y + 8, 10);
-        //}
-
         void draw_clear(int l1, int l2)
         {
             //int i;
 
-            VGA.AsSpan(l1 * 80, (l2 - l1) * 80).Fill(' ');
-            VGAColor.AsSpan(l1 * 80, (l2 - l1) * 80).Fill(C_NORM);
+            VGA.AsSpan(l1 * screenWidth, (l2 - l1) * screenWidth).Fill(' ');
+            VGAColor.AsSpan(l1 * screenWidth, (l2 - l1) * screenWidth).Fill(C_NORM);
             //for (i = 0; i < (l2 - l1) * 80; i++)
             //{
             //    VGA[XY(0, l1) + 0 + 2 * i] = ' ';
@@ -348,24 +367,39 @@ namespace FoenixIDE.Simulator.UI
 
         void reg_init()
         {
-            int reg;
-
             draw_clear(21, 38);
-            for (reg = 0; reg < 256; reg++)
+            for (int reg = 0; reg < 256; reg++)
             {
                 if (shadow_opl_written[reg])
                 {
                     int data = shadow_opl[reg];
+                    //VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = hex[data >> 4];
+                    //VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = hex[data & 0xF];
+
+                    // OPL2
                     VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = hex[data >> 4];
                     VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = hex[data & 0xF];
+
+                    // OPL3
+                    VGA[XY(3 * ((reg + 255) & 0x0F) + 50, 22 + (reg >> 4))] = hex[data >> 4];
+                    VGA[XY(3 * ((reg + 255) & 0x0F) + 51, 22 + (reg >> 4))] = hex[data & 0xF];
                 }
                 else
                 {
-                    VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = (char)249;
-                    VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = (char)249;
+                    //VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = '·';
+                    //VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = '·';
+
+                    // OPL2
+                    VGA[XY(3 * (reg & 0x0F) + 0, 22 + (reg >> 4))] = '·';
+                    VGA[XY(3 * (reg & 0x0F) + 1, 22 + (reg >> 4))] = '·';
+
+                    // OPL 3
+                    VGA[XY(3 * ((reg + 255) & 0x0F) + 50, 22 + (reg >> 4))] = '·';
+                    VGA[XY(3 * ((reg + 255) & 0x0F) + 51, 22 + (reg >> 4))] = '·';
                 }
             }
             puts_xy("OPL2 register map", 0, 21, C_LOW);
+            puts_xy("OPL3 register map", 50, 21, C_LOW);
         }
 
         void note_init()
@@ -392,7 +426,7 @@ namespace FoenixIDE.Simulator.UI
             //textmode(C4350);
             //       clrscr();
 
-
+            VGAColor.AsSpan().Fill(C_NORM);
             //       //prepare screen
             //       draw_logo(41, 39);
             dec_init(9);

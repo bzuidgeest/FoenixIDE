@@ -47,13 +47,15 @@ namespace FoenixIDE.UI
             AddGPUControl(system.GPU);
 
             terminal = new SerialTerminal();
-            system.Memory.UART1.TransmitByte += SerialTransmitByte;
-            system.Memory.UART2.TransmitByte += SerialTransmitByte;
+
+            system.UART1.TransmitByte += SerialTransmitByte;
+            system.UART2.TransmitByte += SerialTransmitByte;
 
             system.GPU.StartOfFrame += SOF;
             system.ResetCPU(true);
             ShowDebugWindow();
-            ShowMemoryWindow();
+            //fix
+            //ShowMemoryWindow();
 
             this.Top = 0;
             this.Left = 0;
@@ -153,7 +155,7 @@ namespace FoenixIDE.UI
             {
                 memoryWindow = new MemoryWindow
                 {
-                    Memory = system.CPU.Memory,
+                    Memory = system.RAM,
                     Left = debugWindow.Left,
                     Top = debugWindow.Top + debugWindow.Height
                 };
@@ -216,13 +218,13 @@ namespace FoenixIDE.UI
 
         public void SOF()
         {
-            byte mask = system.Memory.ReadByte(MemoryLocations.MemoryMap.INT_MASK_REG0);
+            byte mask = system.MemoryManager.ReadByte(MemoryLocations.MemoryMap.INT_MASK_REG0);
             if (!system.CPU.Flags.IrqDisable && ((~mask & 1) == 1))
             {
                 // Set the Keyboard Interrupt
-                byte IRQ0 = system.Memory.ReadByte(MemoryLocations.MemoryMap.INT_PENDING_REG0);
+                byte IRQ0 = system.MemoryManager.ReadByte(MemoryLocations.MemoryMap.INT_PENDING_REG0);
                 IRQ0 |= 1;
-                system.Memory.WriteByte(MemoryLocations.MemoryMap.INT_PENDING_REG0, IRQ0);
+                system.MemoryManager.WriteByte(MemoryLocations.MemoryMap.INT_PENDING_REG0, IRQ0);
                 system.CPU.Pins.IRQ = true;
             }
         }
@@ -233,7 +235,7 @@ namespace FoenixIDE.UI
             if (scanCode != ScanCode.sc_null)
             {
                 lastKeyPressed.Text = "$" + ((byte)scanCode).ToString("X2");
-                system.Memory.KEYBOARD.WriteKey(system, scanCode);
+                system.KEYBOARD.WriteKey(system, scanCode);
             }
             else
             {
@@ -248,7 +250,7 @@ namespace FoenixIDE.UI
             {
                 scanCode += 0x80;
                 lastKeyPressed.Text = "$" + ((byte)scanCode).ToString("X2");
-                system.Memory.KEYBOARD.WriteKey(system, scanCode);
+                system.KEYBOARD.WriteKey(system, scanCode);
             }
             else
             {
@@ -282,14 +284,14 @@ namespace FoenixIDE.UI
             cpsPerf.Text = "CPS: " + cps.ToString("N0");
             fpsPerf.Text = "FPS: " + fps.ToString("N0");
             // write the time to memory - values are BCD
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_SEC - system.Memory.VICKY.StartAddress, BCD(currentTime.Second));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MIN - system.Memory.VICKY.StartAddress, BCD(currentTime.Minute));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_HRS - system.Memory.VICKY.StartAddress, BCD(currentTime.Hour));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DAY - system.Memory.VICKY.StartAddress, BCD(currentTime.Day));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH - system.Memory.VICKY.StartAddress, BCD(currentTime.Month));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR - system.Memory.VICKY.StartAddress, BCD(currentTime.Year % 100));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY - system.Memory.VICKY.StartAddress, BCD(currentTime.Year / 100));
-            system.Memory.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DOW - system.Memory.VICKY.StartAddress, (byte)(currentTime.DayOfWeek+1));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_SEC - system.VICKY.BaseAddress, BCD(currentTime.Second));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MIN - system.VICKY.BaseAddress, BCD(currentTime.Minute));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_HRS - system.VICKY.BaseAddress, BCD(currentTime.Hour));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DAY - system.VICKY.BaseAddress, BCD(currentTime.Day));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH - system.VICKY.BaseAddress, BCD(currentTime.Month));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR - system.VICKY.BaseAddress, BCD(currentTime.Year % 100));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY - system.VICKY.BaseAddress, BCD(currentTime.Year / 100));
+            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DOW - system.VICKY.BaseAddress, (byte)(currentTime.DayOfWeek+1));
         }
 
         private byte BCD(int val)
@@ -372,7 +374,7 @@ namespace FoenixIDE.UI
                 ShowMemoryWindow();
                 if (tileEditor != null && tileEditor.Visible)
                 {
-                    tileEditor.SetMemory(system.Memory);
+                    tileEditor.SetMemory(system.MemoryManager);
                 }
             }
         }
@@ -428,7 +430,7 @@ namespace FoenixIDE.UI
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                FoeniXmlFile fnxml = new FoeniXmlFile(system.Memory, ResChecker, CPUWindow.Instance.breakpoints);
+                FoeniXmlFile fnxml = new FoeniXmlFile(system.MemoryManager, ResChecker, CPUWindow.Instance.breakpoints);
                 fnxml.Write(dialog.FileName, true);
             }
         }
@@ -444,7 +446,7 @@ namespace FoenixIDE.UI
         {
             system.GPU.TileEditorMode = false;
             // Restore the previous graphics mode
-            system.Memory.VICKY.WriteByte(0, previousGraphicMode);
+            system.VICKY.WriteByte(0, previousGraphicMode);
             tileEditor.Dispose();
             tileEditor = null;
         }
@@ -454,13 +456,13 @@ namespace FoenixIDE.UI
             if (tileEditor == null)
             {
                 tileEditor = new TileEditor();
-                tileEditor.SetMemory(system.Memory);
+                tileEditor.SetMemory(system.MemoryManager);
                 system.GPU.TileEditorMode = true;
                 // Set Vicky into Tile mode
-                previousGraphicMode = system.Memory.VICKY.ReadByte(0);
-                system.Memory.VICKY.WriteByte(0, 0x10);
+                previousGraphicMode = system.VICKY.ReadByte(0);
+                system.VICKY.WriteByte(0, 0x10);
                 // Enable borders
-                system.Memory.VICKY.WriteByte(4, 1);
+                system.VICKY.WriteByte(4, 1);
                 tileEditor.Show();
                 tileEditor.FormClosed += new FormClosedEventHandler(EditorWindowClosed);
 
@@ -491,13 +493,13 @@ namespace FoenixIDE.UI
             else
             {
                 // Read the mouse pointer register
-                byte mouseReg = system.Memory.VICKY.ReadByte(0x700);
+                byte mouseReg = system.VICKY.ReadByte(0x700);
                 if ((mouseReg & 1) == 1)
                 {
                     int X = (int)(e.X / ratioW);
                     int Y = (int)(e.Y / ratioH);
-                    system.Memory.VICKY.WriteWord(0x702, X);
-                    system.Memory.VICKY.WriteWord(0x704, Y);
+                    system.VICKY.WriteWord(0x702, X);
+                    system.VICKY.WriteWord(0x704, Y);
                     
                 }
                 else

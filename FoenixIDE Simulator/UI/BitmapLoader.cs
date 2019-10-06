@@ -16,7 +16,7 @@ namespace FoenixIDE.UI
 {
     public partial class BitmapLoader : Form
     {
-        public IMappable Memory = null;
+        public MemoryManager Memory = null;
         public ResourceChecker ResChecker;
 
         int controlRegisterAddress = 0;

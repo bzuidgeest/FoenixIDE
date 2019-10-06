@@ -1,4 +1,5 @@
 ﻿using FoenixIDE.MemoryLocations;
+using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace FoenixIDE.UI
         public static byte Stat1 = 0;
         public static byte LRC = 0;
         public static string[] ports;
-        public IMappable Memory = null;
+        public MemoryManager Memory = null;
 
         SerialPort serial = new SerialPort();
         private Queue<byte> recievedData = new Queue<byte>();
@@ -329,7 +330,7 @@ namespace FoenixIDE.UI
                 byte[] DataBuffer = new byte[transmissionSize];  // Maximum 2 MB, example from $0 to $1F:FFFF.
                 if (FetchData(DataBuffer, blockAddress, transmissionSize, DebugModeCheckbox.Checked))
                 {
-                    MemoryRAM mem = new MemoryRAM(blockAddress, transmissionSize);
+                    BasicMemory mem = new BasicMemory("tempbuffer", blockAddress, transmissionSize);
                     mem.Load(DataBuffer, 0, 0, transmissionSize);
                     MemoryWindow tempMem = new MemoryWindow
                     {

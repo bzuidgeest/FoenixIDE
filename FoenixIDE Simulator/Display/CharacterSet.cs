@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
+using FoenixIDE.Simulator.Devices;
 
 namespace FoenixIDE.Display
 {
@@ -42,7 +43,7 @@ namespace FoenixIDE.Display
 
         public int StartAddress;
         public int Length;
-        public MemoryLocations.MemoryRAM CharacterData;
+        public BasicMemory CharacterData;
         //private int charWidth = 8;
         private int charHeight = 8;
 
@@ -67,7 +68,7 @@ namespace FoenixIDE.Display
         /// <param name="Vram">array to store glyph data</param>
         /// <param name="StartAddress">starting address in array</param>
         /// <param name="newCharSize">Size of glyhphs (8x8 or 8x16)</param>
-        public void Load(string Filename, int Offset, MemoryLocations.MemoryRAM Vram, int StartAddress, SizeCodes newCharSize)
+        public void Load(string Filename, int Offset, BasicMemory Vram, int StartAddress, SizeCodes newCharSize)
         {
             this.StartAddress = StartAddress;
             this.CharSize = newCharSize;

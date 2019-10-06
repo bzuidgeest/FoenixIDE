@@ -50,13 +50,13 @@ namespace FoenixIDE.Simulator.UI
             byte b = 0;
             for (int i = 0; i < 512; i++)
             {
-                b = FoenixSystem.Current.Memory.OPL2.ReadShadowByte(i);
+                b = FoenixSystem.Current.OPL2.ReadShadowByte(i);
                 shadow_opl[i] = (byte)(b == 255 ? 0 : b);
                 shadow_opl_written[i] = (b == 255 ? false : true);
             }
 
             //FoenixSystem.Current.Memory.OPL2.OnRead += OPL2_OnRead;
-            FoenixSystem.Current.Memory.OPL2.OnWrite += OPL2_OnWrite;
+            FoenixSystem.Current.OPL2.OnWrite += OPL2_OnWrite;
 
             screen_init();
 

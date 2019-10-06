@@ -7,7 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using FoenixIDE.MemoryLocations;
 using FoenixIDE.Processor;
+using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 
 namespace FoenixIDE.UI
@@ -151,7 +153,7 @@ namespace FoenixIDE.UI
                                             e.Graphics.FillRectangle(yellowBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                                         }
                                         // Check if the memory still matches the opcodes
-                                        if (!q0.CheckOpcodes(system.Memory.RAM))
+                                        if (!q0.CheckOpcodes(system.RAM))
                                         {
                                             e.Graphics.FillRectangle(redBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                                         }
@@ -188,7 +190,7 @@ namespace FoenixIDE.UI
                                 e.Graphics.FillRectangle(orangeBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                             }
                             // Check if the memory still matches the opcodes
-                            if (!line.CheckOpcodes(system.Memory.RAM))
+                            if (!line.CheckOpcodes(system.RAM))
                             {
                                 e.Graphics.FillRectangle(redBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                             }
@@ -535,7 +537,7 @@ namespace FoenixIDE.UI
             byte[] command = new byte[cmdLength];
             for (int i = 0; i < cmdLength; i++)
             {
-                command[i] = system.Memory.RAM.ReadByte(pc + i);
+                command[i] = FoenixSystem.Current.RAM.ReadByte(pc + i);
             }
             string opcodes = oc.ToString(system.CPU.ReadSignature(oc, pc));
             //string status = "";
@@ -659,13 +661,13 @@ namespace FoenixIDE.UI
         private bool InterruptMatchesCheckboxes()
         {
             // Read registers
-            byte reg0 = system.Memory.INTERRUPT.ReadByte(0);
+            byte reg0 = system.INTERRUPT.ReadByte(0);
             if ((reg0 & 1) == 1 && SOFCheckbox.Checked)
             {
                 return true;
             }
-            byte reg1 = system.Memory.INTERRUPT.ReadByte(1);
-            byte reg2 = system.Memory.INTERRUPT.ReadByte(2);
+            byte reg1 = system.INTERRUPT.ReadByte(1);
+            byte reg2 = system.INTERRUPT.ReadByte(2);
             if ((reg1 & 1) == 1 && KeyboardCheckBox.Checked)
             {
                 return true;

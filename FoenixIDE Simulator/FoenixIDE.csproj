@@ -48,7 +48,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;WAVE_TABLEMUL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -123,9 +123,9 @@
     <Compile Include="FileFormat\DebugLine.cs" />
     <Compile Include="FileFormat\FoenixmlFile.cs" />
     <Compile Include="FileFormat\HexFile.cs" />
-    <Compile Include="Devices\CodecRAM.cs" />
+    <Compile Include="Devices\Codec.cs" />
     <Compile Include="FileFormat\ListFile.cs" />
-    <Compile Include="MemoryLocations\IMappable.cs" />
+    <Compile Include="MemoryLocations\IMemoryMappedDevice.cs" />
     <Compile Include="Devices\MathCoproRegisters.cs" />
     <Compile Include="MemoryLocations\MemoryMap_Beatrix.cs" />
     <Compile Include="MemoryLocations\MemoryMap_Vicky.cs" />
@@ -177,7 +177,7 @@
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="FoenixSystem.cs" />
-    <Compile Include="MemoryLocations\MemoryRAM.cs" />
+    <Compile Include="Devices\BasicMemory.cs" />
     <Compile Include="MemoryLocations\MemoryMap_Page00.cs" />
     <Compile Include="MemoryLocations\MemoryManager.cs" />
     <Compile Include="Processor\Operations.cs" />

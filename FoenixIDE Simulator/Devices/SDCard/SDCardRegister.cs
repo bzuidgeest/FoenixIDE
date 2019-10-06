@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FoenixIDE.MemoryLocations;
 
 namespace FoenixIDE.Simulator.Devices.SDCard
 {
@@ -51,8 +52,6 @@ namespace FoenixIDE.Simulator.Devices.SDCard
             return directory.Exists | file.Exists;
         }
     }
-
-    
 
     public class LongBuffer
     {
@@ -115,8 +114,14 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         }
     }
 
-    public class SDCardRegister : MemoryLocations.MemoryRAM
+    public class SDCardRegister : IMemoryMappedDevice
     {
+        private Memory<byte> data;
+
+        public int BaseAddress { get; }
+        public string Name { get { return this.GetType().ToString(); } }
+        public int Size { get { return 2; } }
+
         public const int SDCARD_DATA = 0;
         public const int SDCARD_CMD = 1;
 
@@ -139,15 +144,22 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         public String Root { get; set; } = "c:\\";
         public bool SDCardInserted { get; set; } = true;
 
-        public SDCardRegister(int startAddress, int length) : base(startAddress, length)
+        public SDCardRegister(int baseAddress)
         {
+            this.BaseAddress = baseAddress;
+
             outData = new Deque<byte>();
             inData = new Queue<byte>();
             currentFile = new CH376FileInfo();
             currentFile.path = Root;
         }
 
-        public override byte ReadByte(int addr)
+        public void SetMemory(Memory<byte> memory)
+        {
+            this.data = memory;
+        }
+
+        public byte ReadByte(int addr)
         {
             byte data = 0;
 
@@ -168,9 +180,9 @@ namespace FoenixIDE.Simulator.Devices.SDCard
             return data;
         }
 
-        public override void WriteByte(int address, byte value)
+        public void WriteByte(int address, byte value)
         {
-            data[address] = value;
+            data.Span[address] = value;
 
             OnWrite?.Invoke(this, new SDCardWriteEvent(address, value));
 
@@ -558,16 +570,16 @@ namespace FoenixIDE.Simulator.Devices.SDCard
         {
             if (state)
             {
-                byte IRQ1 = FoenixSystem.Current.Memory.ReadByte(MemoryLocations.MemoryMap.INT_PENDING_REG1);
+                byte IRQ1 = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.INT_PENDING_REG1);
                 IRQ1 |= 128;
-                FoenixSystem.Current.Memory.WriteByte(MemoryLocations.MemoryMap.INT_PENDING_REG1, IRQ1);
+                FoenixSystem.Current.MemoryManager.WriteByte(MemoryMap.INT_PENDING_REG1, IRQ1);
                 FoenixSystem.Current.CPU.Pins.IRQ = true;
             }
             else
             {
-                byte IRQ1 = FoenixSystem.Current.Memory.ReadByte(MemoryLocations.MemoryMap.INT_PENDING_REG1);
+                byte IRQ1 = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.INT_PENDING_REG1);
                 IRQ1 &= 0b01111111;
-                FoenixSystem.Current.Memory.WriteByte(MemoryLocations.MemoryMap.INT_PENDING_REG1, IRQ1);
+                FoenixSystem.Current.MemoryManager.WriteByte(MemoryMap.INT_PENDING_REG1, IRQ1);
                 FoenixSystem.Current.CPU.Pins.IRQ = false;
             }
         }

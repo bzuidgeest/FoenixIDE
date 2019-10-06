@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.MemoryLocations;
 using System.Diagnostics;
+using FoenixIDE.Simulator.Devices;
 
 namespace FoenixIDE.Display
 {
@@ -28,9 +29,10 @@ namespace FoenixIDE.Display
         int[] graphicsLUT = null;
         byte[] gammaCorrection = null;
 
-        public MemoryRAM VRAM = null;
-        public MemoryRAM RAM = null;
-        public MemoryRAM VICKY = null;
+        public BasicMemory VRAM = null;
+        public BasicMemory RAM = null;
+        public BasicMemory VICKY = null;
+        
         public int paintCycle = 0;
         private bool tileEditorMode = false;
         public bool MousePointerMode = false;
@@ -257,17 +259,17 @@ namespace FoenixIDE.Display
             drawing = false;
         }
 
-        public static byte[] LoadGammaCorrection(MemoryRAM VKY)
+        public static byte[] LoadGammaCorrection(BasicMemory VKY)
         {
             // Read the color lookup tables
             int gamAddress = MemoryMap.GAMMA_BASE_ADDR - MemoryMap.VICKY_BASE_ADDR;
             // 
             byte[] result = new byte[3*256];
-            VKY.Copy(gamAddress, result, 0, 3 * 256);
+            FoenixSystem.Current.MemoryManager.Copy(gamAddress, result, 0, 3 * 256);
             return result;
         }
 
-        public static int[] LoadLUT(MemoryRAM VKY)
+        public static int[] LoadLUT(BasicMemory VKY)
         {
             // Read the color lookup tables
             int lutAddress = MemoryMap.GRP_LUT_BASE_ADDR - MemoryMap.VICKY_BASE_ADDR;
@@ -318,14 +320,14 @@ namespace FoenixIDE.Display
             Graphics gr = Graphics.FromImage(bitmap);
             
             // Read the color lookup tables
-            int fgLUT = MemoryLocations.MemoryMap.FG_CHAR_LUT_PTR - VICKY.StartAddress;
-            int bgLUT = MemoryLocations.MemoryMap.BG_CHAR_LUT_PTR - VICKY.StartAddress;
+            int fgLUT = MemoryLocations.MemoryMap.FG_CHAR_LUT_PTR - VICKY.BaseAddress;
+            int bgLUT = MemoryLocations.MemoryMap.BG_CHAR_LUT_PTR - VICKY.BaseAddress;
 
             int col = 0, line = 0;
 
-            int colorStart = MemoryLocations.MemoryMap.SCREEN_PAGE1 - VICKY.StartAddress;
-            int lineStart = MemoryLocations.MemoryMap.SCREEN_PAGE0 - VICKY.StartAddress;
-            int fontBaseAddress = MemoryLocations.MemoryMap.FONT0_MEMORY_BANK_START - VICKY.StartAddress;
+            int colorStart = MemoryLocations.MemoryMap.SCREEN_PAGE1 - VICKY.BaseAddress;
+            int lineStart = MemoryLocations.MemoryMap.SCREEN_PAGE0 - VICKY.BaseAddress;
+            int fontBaseAddress = MemoryLocations.MemoryMap.FONT0_MEMORY_BANK_START - VICKY.BaseAddress;
             Rectangle rect = new Rectangle(0, 0, 640, 480);
             BitmapData bitmapData = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             IntPtr p = bitmapData.Scan0;
@@ -352,7 +354,7 @@ namespace FoenixIDE.Display
                     byte character = VICKY.ReadByte(textAddr++);
                     if (X == col && Y == line && CursorState && CursorEnabled)
                     {
-                        character = VICKY.ReadByte(MemoryLocations.MemoryMap.VKY_TXT_CURSOR_CHAR_REG - VICKY.StartAddress);
+                        character = VICKY.ReadByte(MemoryLocations.MemoryMap.VKY_TXT_CURSOR_CHAR_REG - VICKY.BaseAddress);
                     }
                     byte color = VICKY.ReadByte(colorAddr++);
                     byte fgColor = (byte)((color & 0xF0) >> 4);
@@ -619,7 +621,7 @@ namespace FoenixIDE.Display
             int Y = VICKY.ReadWord(0x704);
 
             byte mouseReg = VICKY.ReadByte(0x700);
-            int pointerAddress = 0xAF_0500  - VICKY.StartAddress;
+            int pointerAddress = 0xAF_0500  - VICKY.BaseAddress;
             if ((mouseReg & 2) == 2)
             {
                 pointerAddress += 0x100;

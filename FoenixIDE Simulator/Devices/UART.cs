@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FoenixIDE.MemoryLocations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +7,14 @@ using System.Threading.Tasks;
 
 namespace FoenixIDE.Simulator.Devices
 {
-    public class UART: MemoryLocations.MemoryRAM
+    public class UART : IMemoryMappedDevice
     {
+        private Memory<byte> data;
+
+        public int BaseAddress { get; }
+        public string Name { get; }
+        public int Size { get { return 8; } }
+
         private const int RxTxBuffer = 0;
         private const int InterruptEnable = 1;
         private const int IRQFIFO = 2;
@@ -39,13 +46,20 @@ namespace FoenixIDE.Simulator.Devices
         public delegate void TransmitByteFunction(byte value);
         public TransmitByteFunction TransmitByte;
 
-        public UART(int StartAddress, int Length) : base(StartAddress, Length)
+        public UART(int port, int baseAddress)
         {
+            this.Name = GetType().ToString() + port;
+            this.BaseAddress = baseAddress;
         }
 
-        public override void WriteByte(int Address, byte Value)
+        public void SetMemory(Memory<byte> memory)
         {
-            data[Address] = Value;
+            this.data = memory;
+        }
+
+        public void WriteByte(int Address, byte Value)
+        {
+            data.Span[Address] = Value;
             switch (Address)
             {
                 case RxTxBuffer:
@@ -126,14 +140,14 @@ namespace FoenixIDE.Simulator.Devices
             TxCounter = 0;
         }
 
-        public override byte ReadByte(int Address)
+        public byte ReadByte(int Address)
         {
             switch(Address)
             {
                 case LineStatus:
                     return 0x21;
                 default:
-                    return data[Address];
+                    return data.Span[Address];
             }
         }
     }

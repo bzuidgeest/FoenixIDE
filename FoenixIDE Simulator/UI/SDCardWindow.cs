@@ -20,13 +20,13 @@ namespace FoenixIDE.Simulator.UI.SDCardDebugger
         public SDCardWindow()
         {
             InitializeComponent();
-            rootTextBox.Text = FoenixSystem.Current.Memory.SDCARD.Root;
+            rootTextBox.Text = FoenixSystem.Current.SDCARD.Root;
 
             dataRichTextBox.SelectionTabs = new int[] { 30, 100, 300, 400 };
             //dataRichTextBox.AppendText("Dir\tC nr.\tData");
 
-            FoenixSystem.Current.Memory.SDCARD.OnRead += SDCARD_OnRead;
-            FoenixSystem.Current.Memory.SDCARD.OnWrite += SDCARD_OnWrite;
+            FoenixSystem.Current.SDCARD.OnRead += SDCARD_OnRead;
+            FoenixSystem.Current.SDCARD.OnWrite += SDCARD_OnWrite;
         }
 
         private void SDCARD_OnWrite(object sender, Devices.SDCard.SDCardWriteEvent e)
@@ -94,15 +94,15 @@ namespace FoenixIDE.Simulator.UI.SDCardDebugger
         {
             if (rootBrowserDialog.ShowDialog(this) == DialogResult.OK)
             {
-                FoenixSystem.Current.Memory.SDCARD.Root = rootBrowserDialog.SelectedPath;
+                FoenixSystem.Current.SDCARD.Root = rootBrowserDialog.SelectedPath;
             }
 
-            rootTextBox.Text = FoenixSystem.Current.Memory.SDCARD.Root;
+            rootTextBox.Text = FoenixSystem.Current.SDCARD.Root;
         }
 
         private void IsMountedCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            FoenixSystem.Current.Memory.SDCARD.SDCardInserted = isInsertedCheckBox.Checked;
+            FoenixSystem.Current.SDCARD.SDCardInserted = isInsertedCheckBox.Checked;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FoenixIDE.Processor;
+using FoenixIDE.Simulator.Devices;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -106,7 +107,7 @@ namespace FoenixIDE.Simulator.FileFormat
                 return "";
             }
         }
-        public bool CheckOpcodes(MemoryLocations.MemoryRAM ram)
+        public bool CheckOpcodes(BasicMemory ram)
         {
             for (int i=0;i<commandLength;i++)
             {

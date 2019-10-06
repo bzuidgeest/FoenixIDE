@@ -5,49 +5,37 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FoenixIDE.MemoryLocations
+namespace FoenixIDE.Simulator.Devices
 {
-    public class MemoryRAM : IMappable
+    public class BasicMemory : IMemoryMappedDevice
     {
-        protected byte[] data = null;
-        private readonly int startAddress;
-        private readonly int length;
-        private readonly int endAddress;
+        private Memory<byte> data;
 
-        public int StartAddress
+        //private readonly int length;
+        //private readonly int endAddress;
+
+        public int BaseAddress { get; }
+        //public string Name { get { return this.GetType().ToString(); } }
+        public string Name { get; }
+        public int Size { get; }
+
+        public BasicMemory(string name, int baseAddress, int size)
         {
-            get
-            {
-                return this.startAddress;
-            }
+            this.Name = name;
+            this.BaseAddress = baseAddress;
+            this.Size = size;
         }
 
-        public int Length
+        public void SetMemory(Memory<byte> memory)
         {
-            get
-            {
-                return length;
-            }
+            this.data = memory;
         }
 
-        public int EndAddress
+        public BasicMemory()
         {
-            get
-            {
-                return endAddress;
-            }
-        }
-
-        public MemoryRAM(int StartAddress, int Length)
-        {
-            this.startAddress = StartAddress;
-            this.length = Length;
-            this.endAddress = StartAddress + Length - 1;
-            data = new byte[Length];
-        }
-
-        private MemoryRAM()
-        {
+            Name = "Default";
+            data = new byte[0xFF_FFFF];
+            Size = 0xFF_FFFF;
         }
 
         /// <summary>
@@ -55,7 +43,7 @@ namespace FoenixIDE.MemoryLocations
         /// </summary>
         public void Zero()
         {
-            Array.Clear(data, 0, Length);
+            data.Span.Fill(0);
         }
 
         /// <summary>
@@ -65,7 +53,8 @@ namespace FoenixIDE.MemoryLocations
         /// <returns></returns>
         public virtual byte ReadByte(int Address)
         {
-            return data[Address];
+            
+            return data.Span[Address];
         }
 
         /// <summary>
@@ -92,13 +81,13 @@ namespace FoenixIDE.MemoryLocations
         {
             for (int i = 0; i < length; i++)
             {
-                this.data[DestStart + i] = SourceData[SrcStart + i];
+                this.data.Span[DestStart + i] = SourceData[SrcStart + i];
             }
         }
 
         public virtual void WriteByte(int Address, byte Value)
         {
-            data[Address] = Value;
+            data.Span[Address] = Value;
         }
 
         public void WriteWord(int Address, int Value)
@@ -107,13 +96,6 @@ namespace FoenixIDE.MemoryLocations
             WriteByte(Address + 1, (byte)(Value >> 8 & 0xff));
         }
 
-        internal void Copy(int SourceAddress, MemoryRAM Destination, int DestAddress, int Length)
-        {
-            System.Array.Copy(data, SourceAddress, Destination.data, DestAddress, Length);
-        }
-        internal void Copy(int SourceAddress, byte[] buffer, int DestAddress, int Length)
-        {
-            System.Array.Copy(data, SourceAddress, buffer, DestAddress, Length);
-        }
+       
     }
 }

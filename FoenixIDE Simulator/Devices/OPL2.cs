@@ -1,4 +1,5 @@
-﻿using FoenixIDE.Simulator.Devices.Audio;
+﻿using FoenixIDE.MemoryLocations;
+using FoenixIDE.Simulator.Devices.Audio;
 using FoenixIDE.Simulator.Devices.Audio.HardSynth.OPL.OPLXLPT;
 using FoenixIDE.Simulator.Devices.Audio.SoftSynth.OPL.DOSBox;
 using NAudio.Wave;
@@ -13,15 +14,21 @@ using System.Threading.Tasks;
 
 namespace FoenixIDE.Simulator.Devices
 {
-    public class OPL2 : MemoryLocations.MemoryRAM, IWaveProvider
+    public class OPL2 : IMemoryMappedDevice, IWaveProvider
     {
+        private Memory<byte> data;
+
+        public int BaseAddress { get; }
+        public string Name { get { return this.GetType().ToString(); } }
+        public int Size { get { return 256; } } // 512 for opl3
+
         private OPLSystem oPLSystem = Configuration.Current.OPLSystem;
         private int parallelPort = Configuration.Current.OPLParallelPort;
         private MemoryStream stream = new MemoryStream();
         private Queue<byte> sampleQueue = new Queue<byte>();
 
         private IOPL oPL;
-        public byte[] shadowOPL = new byte[512];
+        //public byte[] shadowOPL = new byte[512];
 
         private WaveOutEvent soundOutput;
         public WaveFormat WaveFormat { get; private set; }
@@ -29,8 +36,10 @@ namespace FoenixIDE.Simulator.Devices
         public event EventHandler<BasicRegisterEvent> OnRead;
         public event EventHandler<BasicRegisterEvent> OnWrite;
 
-        public OPL2(int StartAddress, int Length) : base(StartAddress, Length)
+        public OPL2(int baseAddress)
         {
+            this.BaseAddress = baseAddress;
+
             switch (oPLSystem)
             {
                 case OPLSystem.DOSBox:
@@ -63,20 +72,27 @@ namespace FoenixIDE.Simulator.Devices
             }
 
 
-            for (int i = 0; i < 512; i++)
-            {
-                shadowOPL[i] = oPL.ReadRegister(i);
-            }
+            
 
             oPL.Init(44100);
         }
 
+        public void SetMemory(Memory<byte> memory)
+        {
+            this.data = memory;
+
+            for (int i = 0; i < Size; i++)
+            {
+                //shadowOPL[i] = oPL.ReadRegister(i);
+                data.Span[i] = oPL.ReadRegister(i);
+            }
+        }
 
         private void SampleReader()
         {
             int counter = 0, prevCounter = 0;
             byte[] buffer = new byte[1024];
-            while(true)
+            while (true)
             {
                 counter = FoenixSystem.Current.CPU.CycleCounter;
                 //if (counter - prevCounter >= 317)
@@ -103,22 +119,22 @@ namespace FoenixIDE.Simulator.Devices
         // For the emulation this read does not exist.
         public byte ReadShadowByte(int address)
         {
-            return (shadowOPL[address]);
+            return (data.Span[address]);
         }
 
-        public override byte ReadByte(int address)
+        public byte ReadByte(int address)
         {
-            byte data = base.ReadByte(address);
-            OnRead?.Invoke(this, new BasicRegisterEvent(address, data));
+            byte datax = data.Span[address];
+            OnRead?.Invoke(this, new BasicRegisterEvent(address, datax));
 
-            return data;
+            return datax;
         }
 
-        public override void WriteByte(int address, byte value)
+        public void WriteByte(int address, byte value)
         {
-            shadowOPL[address] = value;
+            data.Span[address] = value;
 
-            base.WriteByte(address, value);
+            //base.WriteByte(address, value);
 
             OnWrite?.Invoke(this, new BasicRegisterEvent(address, value));
 

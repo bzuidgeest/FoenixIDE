@@ -10,14 +10,14 @@ namespace FoenixIDE.Simulator.FileFormat
 {
     class FoeniXmlFile
     {
-        private IMappable Memory;
+        private MemoryManager Memory;
         private ResourceChecker Resources;
         private const int PHRASE_LENGTH = 16;
         private Processor.Breakpoints BreakPoints;
 
         private FoeniXmlFile() { }
 
-        public FoeniXmlFile(IMappable memory, ResourceChecker resources, Processor.Breakpoints breakpoints)
+        public FoeniXmlFile(MemoryManager memory, ResourceChecker resources, Processor.Breakpoints breakpoints)
         {
             this.Memory = memory;
             this.Resources = resources;

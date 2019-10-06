@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FoenixIDE.MemoryLocations
 {
-    public interface IMappable
+    public interface IMemoryMappedDevice
     {
         /// <summary>
         /// Write a byte of data to memory or to a memory mapped device.  Note that I/O devices have separate input and output registers,
@@ -17,8 +17,13 @@ namespace FoenixIDE.MemoryLocations
         /// <returns></returns>
         void WriteByte(int Address, byte Data);
         byte ReadByte(int Address);
-        int StartAddress { get; }
-        int Length { get; }
-        int EndAddress { get; }
+        void SetMemory(Memory<byte> memory);
+
+        //int Length { get; }
+        //int EndAddress { get; }
+
+        int BaseAddress { get; }
+        int Size { get; }
+        string Name { get; }
     }
 }

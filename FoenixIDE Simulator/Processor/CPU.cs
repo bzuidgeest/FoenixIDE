@@ -154,7 +154,7 @@ namespace FoenixIDE.Processor
                 }
             }
             int pc = GetLongPC();
-            CurrentOpcode = opcodes[Memory.RAM.ReadByte(pc)];
+            CurrentOpcode = opcodes[Memory.ReadByte(pc)];
             OpcodeLength = CurrentOpcode.Length;
             OpcodeCycles = 1;
             SignatureBytes = ReadSignature(CurrentOpcode, pc);
@@ -206,7 +206,7 @@ namespace FoenixIDE.Processor
         public void Reset()
         {
             Pins.VectorPull = true;
-            Memory.VectorPull = true;
+            //Memory.VectorPull = true;
 
             SetEmulationMode();
             Flags.Value = 0;
@@ -222,7 +222,7 @@ namespace FoenixIDE.Processor
             Flags.IrqDisable = true;
             Pins.IRQ = false;
             Pins.VectorPull = false;
-            Memory.VectorPull = false;
+            //Memory.VectorPull = false;
         }
 
         /// <summary>
@@ -237,15 +237,15 @@ namespace FoenixIDE.Processor
         {
             if (oc.Length == 2)
             {
-                return Memory.RAM.ReadByte(pc + 1);
+                return Memory.ReadByte(pc + 1);
             }
             else if (oc.Length == 3)
             {
-                return Memory.RAM.ReadWord(pc + 1);
+                return Memory.ReadWord(pc + 1);
             }
             else if (oc.Length == 4)
             { 
-                return Memory.RAM.ReadLong(pc + 1);
+                return Memory.ReadLong(pc + 1);
             }
 
             return 0;

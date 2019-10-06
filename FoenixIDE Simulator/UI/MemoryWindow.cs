@@ -8,13 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using FoenixIDE.Simulator.Devices;
 
 namespace FoenixIDE.UI
 {
     public partial class MemoryWindow : Form
     {
         public static MemoryWindow Instance = null;
-        public IMappable Memory = null;
+        public IMemoryMappedDevice Memory = null;
         public int StartAddress = 0;
         public int EndAddress = 0xFF;
         const int PageSize = 0xFF;
@@ -51,10 +52,10 @@ namespace FoenixIDE.UI
             MCRBit7Button.Tag = 0;
 
             // Set the Address to Bank $00
-            if (Memory is MemoryRAM)
+            if (Memory is BasicMemory)
             {
                 AddressCombo.Items.Clear();
-                AddressCombo.Items.Add("Custom Memory " + Memory.StartAddress.ToString("X6"));
+                AddressCombo.Items.Add("Custom Memory " + Memory.BaseAddress.ToString("X6"));
                 AddressCombo.Enabled = false;
                 HighlightPanel.ReadOnly = true;
                 FooterPanel.Visible = false;
@@ -79,9 +80,9 @@ namespace FoenixIDE.UI
             for (int i = StartAddress; i < EndAddress; i += 0x10)
             {
                 s.Append(">");
-                if (Memory is MemoryRAM)
+                if (Memory is BasicMemory)
                 {
-                    s.Append((i + Memory.StartAddress).ToString("X6"));
+                    s.Append((i + Memory.BaseAddress).ToString("X6"));
                 }
                 else
                 {
@@ -92,7 +93,7 @@ namespace FoenixIDE.UI
                 StringBuilder text = new StringBuilder();
                 for (int j = 0; j < 16; j++)
                 {
-                    if (i + j < Memory.Length)
+                    if (i + j < Memory.Size)
                     {
                         int c = Memory.ReadByte(i + j);
                         s.Append(c.ToString("X2"));
@@ -132,7 +133,7 @@ namespace FoenixIDE.UI
 
         private void UpdateDisplayTimer_Tick(object sender, EventArgs e)
         {
-            if (!(Memory is MemoryRAM))
+            if (!(Memory is BasicMemory))
             {
                 RefreshMemoryView();
                 UpdateMCRButtons();
@@ -159,20 +160,20 @@ namespace FoenixIDE.UI
 
         public void GotoAddress(int requestedAddress)
         {
-            if (Memory is MemoryRAM)
+            if (Memory is BasicMemory)
             {
-                int newAddress = requestedAddress - Memory.StartAddress;
-                if (newAddress >= 0 && (newAddress) < Memory.Length)
+                int newAddress = requestedAddress - Memory.BaseAddress;
+                if (newAddress >= 0 && (newAddress) < Memory.Size)
                 {
                     StartAddress = newAddress;
                     EndAddress = newAddress + PageSize;
-                    if (EndAddress > Memory.Length)
+                    if (EndAddress > Memory.Size)
                     {
-                        EndAddress = Memory.Length;
+                        EndAddress = Memory.Size;
                     }
                 }
-                this.StartAddressText.Text = (StartAddress + Memory.StartAddress).ToString("X6");
-                this.EndAddressText.Text = (EndAddress + Memory.StartAddress).ToString("X6");
+                this.StartAddressText.Text = (StartAddress + Memory.BaseAddress).ToString("X6");
+                this.EndAddressText.Text = (EndAddress + Memory.BaseAddress).ToString("X6");
             }
             else
             {
@@ -185,7 +186,7 @@ namespace FoenixIDE.UI
             HighlightPanel.Visible = false;
             PositionLabel.Text = "";
             RefreshMemoryView();
-            if (!(Memory is MemoryRAM) && StartAddressText.Text.StartsWith("AF00"))
+            if (!(Memory is BasicMemory) && StartAddressText.Text.StartsWith("AF00"))
             {
                 UpdateMCRButtons();
             }
@@ -346,11 +347,11 @@ namespace FoenixIDE.UI
             {
                 // Determine the address
                 addr = Convert.ToInt32(StartAddressText.Text, 16) + line * 16 + offset;
-                if (Memory is MemoryRAM)
+                if (Memory is BasicMemory)
                 {
-                    if (addr - Memory.StartAddress < Memory.Length)
+                    if (addr - Memory.BaseAddress < Memory.Size)
                     {
-                        value = Memory.ReadByte(addr - Memory.StartAddress);
+                        value = Memory.ReadByte(addr - Memory.BaseAddress);
                     }
                     else
                     {

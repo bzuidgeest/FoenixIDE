@@ -107,11 +107,14 @@ namespace FoenixIDE.Simulator.FileFormat
                 return "";
             }
         }
-        public bool CheckOpcodes(BasicMemory ram)
+
+        //public bool CheckOpcodes(BasicMemory ram)
+        public bool CheckOpcodes()
         {
             for (int i=0;i<commandLength;i++)
             {
-                if (ram.ReadByte(PC + i) != command[i])
+                //if (ram.ReadByte(PC + i) != command[i])
+                if (FoenixSystem.Current.MemoryManager.ReadByte(PC + i) != command[i])
                 {
                     return false;
                 }

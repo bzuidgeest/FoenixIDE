@@ -56,7 +56,7 @@ namespace FoenixIDE.Processor
         /// </summary>
         private DateTime checkStartTime = DateTime.Now;
 
-        public MemoryManager Memory = null;
+        public MemoryManager memoryManager = null;
         public Thread CPUThread = null;
 
         public event Operations.SimulatorCommandEvent SimulatorCommand;
@@ -93,7 +93,7 @@ namespace FoenixIDE.Processor
 
         public CPU(MemoryManager newMemory)
         {
-            Memory = newMemory;
+            memoryManager = newMemory;
             clockSpeed = 14000000;
             clockCyles = 0;
             Operations operations = new Operations(this);
@@ -154,7 +154,7 @@ namespace FoenixIDE.Processor
                 }
             }
             int pc = GetLongPC();
-            CurrentOpcode = opcodes[Memory.ReadByte(pc)];
+            CurrentOpcode = opcodes[memoryManager.ReadByte(pc)];
             OpcodeLength = CurrentOpcode.Length;
             OpcodeCycles = 1;
             SignatureBytes = ReadSignature(CurrentOpcode, pc);
@@ -217,7 +217,7 @@ namespace FoenixIDE.Processor
             DirectPage.Value = 0;
             ProgramBank.Value = 0;
 
-            PC.Value = Memory.ReadWord(MemoryMap.VECTOR_ERESET);
+            PC.Value = memoryManager.ReadWord(MemoryMap.VECTOR_ERESET);
 
             Flags.IrqDisable = true;
             Pins.IRQ = false;
@@ -230,22 +230,22 @@ namespace FoenixIDE.Processor
         /// </summary>
         public OpCode PreFetch()
         {
-            return opcodes[Memory[GetLongPC()]];
+            return opcodes[memoryManager[GetLongPC()]];
         }
 
         public int ReadSignature(OpCode oc, int pc)
         {
             if (oc.Length == 2)
             {
-                return Memory.ReadByte(pc + 1);
+                return memoryManager.ReadByte(pc + 1);
             }
             else if (oc.Length == 3)
             {
-                return Memory.ReadWord(pc + 1);
+                return memoryManager.ReadWord(pc + 1);
             }
             else if (oc.Length == 4)
             { 
-                return Memory.ReadLong(pc + 1);
+                return memoryManager.ReadLong(pc + 1);
             }
 
             return 0;
@@ -259,12 +259,12 @@ namespace FoenixIDE.Processor
         /// <returns></returns>
         private int GetNextWord(int offset)
         {
-            return Memory.ReadWord(GetLongPC() + offset + 1);
+            return memoryManager.ReadWord(GetLongPC() + offset + 1);
         }
 
         private int GetNextLong(int offset)
         {
-            return Memory.ReadLong(GetLongPC() + offset + 1);
+            return memoryManager.ReadLong(GetLongPC() + offset + 1);
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace FoenixIDE.Processor
             int addr = DirectPage.Value + baseAddress;
             if (Index != null)
                 addr += Index.Value;
-            int pointer = Memory.ReadWord(addr);
+            int pointer = memoryManager.ReadWord(addr);
             return DataBank.GetLongAddress(pointer);
         }
 
@@ -318,7 +318,7 @@ namespace FoenixIDE.Processor
             int addr = baseAddress;
             if (Index != null)
                 addr += Index.Value;
-            return DataBank.GetLongAddress(Memory.ReadWord(addr));
+            return DataBank.GetLongAddress(memoryManager.ReadWord(addr));
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace FoenixIDE.Processor
         private int GetStackValue(int Offset = 0)
         {
             int addr = Stack.Value - Offset;
-            return Memory.ReadWord(addr);
+            return memoryManager.ReadWord(addr);
         }
 
         #endregion
@@ -355,7 +355,7 @@ namespace FoenixIDE.Processor
 
         public void JumpVector(int VectorAddress)
         {
-            int addr = Memory.ReadWord(VectorAddress);
+            int addr = memoryManager.ReadWord(VectorAddress);
             ProgramBank.Value = 0;
             PC.Value = addr;
         }
@@ -378,7 +378,7 @@ namespace FoenixIDE.Processor
                 throw new Exception("bytes must be between 1 and 3. Got " + bytes.ToString());
 
             Stack.Value -= bytes;
-            Memory.Write(Stack.Value + 1, value, bytes);
+            memoryManager.Write(Stack.Value + 1, value, bytes);
         }
 
         public void Push(Register Reg, int Offset)
@@ -396,7 +396,7 @@ namespace FoenixIDE.Processor
             if (bytes < 1 || bytes > 3)
                 throw new Exception("bytes must be between 1 and 3. got " + bytes.ToString());
 
-            int ret = Memory.Read(Stack.Value + 1, bytes);
+            int ret = memoryManager.Read(Stack.Value + 1, bytes);
             Stack.Value += bytes;
             return ret;
         }

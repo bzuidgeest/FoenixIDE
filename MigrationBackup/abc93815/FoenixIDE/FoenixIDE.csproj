@@ -1,0 +1,343 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EBC67780-0386-4B97-A8DC-82ED73CBF0A0}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>FoenixIDE.Simulator</RootNamespace>
+    <AssemblyName>FoenixIDE</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WAVE_TABLEMUL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE;WAVE_TABLEMUL</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DequeNet, Version=1.0.1.0, Culture=neutral, PublicKeyToken=6c367a1c27d122c9, processorArchitecture=MSIL">
+      <HintPath>..\packages\DequeNET.1.0.1\lib\portable-net4+win8\DequeNet.dll</HintPath>
+    </Reference>
+    <Reference Include="INIFileParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
+      <HintPath>..\packages\ini-parser.2.5.2\lib\net20\INIFileParser.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Basic\ScanCodes.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="DeviceEnum.cs" />
+    <Compile Include="Devices\Audio\Enumerations.cs" />
+    <Compile Include="Devices\Audio\HardSynth\OPL\OPLXLPT\LPT.cs" />
+    <Compile Include="Devices\Audio\HardSynth\OPL\OPLXLPT\OPLXLPT.cs" />
+    <Compile Include="Devices\Audio\IOPL.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxChannel.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxChip.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxOperator.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxOPL.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\DOSBoxShared.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\Enumerations.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\OPLChip.cs" />
+    <Compile Include="Devices\Audio\SoftSynth\OPL\DOSBox\OPLTimer.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\Nuked.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedData.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedEnumerations.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedOPL.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedSlot.cs" />
+    <Compile Include="Devices\BasicRegisterEvent.cs" />
+    <Compile Include="Devices\InterruptController.cs" />
+    <Compile Include="Devices\KeyboardRegister.cs" />
+    <Compile Include="Devices\MPU401.cs" />
+    <Compile Include="Devices\OPL2.cs" />
+    <Compile Include="Devices\SDCard\SDCardRegister.cs" />
+    <Compile Include="Devices\SDCard\SDCommand.cs" />
+    <Compile Include="Devices\SDCard\SDInterruptState.cs" />
+    <Compile Include="Devices\SDCard\SDResponse.cs" />
+    <Compile Include="Devices\UART.cs" />
+    <Compile Include="FileFormat\DebugLine.cs" />
+    <Compile Include="FileFormat\FoenixmlFile.cs" />
+    <Compile Include="FileFormat\HexFile.cs" />
+    <Compile Include="Devices\Codec.cs" />
+    <Compile Include="FileFormat\ListFile.cs" />
+    <Compile Include="MemoryLocations\IMemoryMappedDevice.cs" />
+    <Compile Include="Devices\MathCoproRegisters.cs" />
+    <Compile Include="MemoryLocations\MemoryMap_Beatrix.cs" />
+    <Compile Include="MemoryLocations\MemoryMap_Vicky.cs" />
+    <Compile Include="MemoryLocations\MemoryMap_Blocks.cs" />
+    <Compile Include="FileFormat\ResourceChecker.cs" />
+    <Compile Include="Processor\Breakpoints.cs" />
+    <Compile Include="Processor\CPUPins.cs" />
+    <Compile Include="Processor\InteruptTypes.cs" />
+    <Compile Include="Processor\RegisterAccumulator.cs" />
+    <Compile Include="Processor\AddressingModeEnum.cs" />
+    <Compile Include="Processor\OpCode.cs" />
+    <Compile Include="Processor\OpcodeList.cs" />
+    <Compile Include="Processor\SimulatorCommands.cs" />
+    <Compile Include="Processor\CPU.cs" />
+    <Compile Include="Processor\CPU_Registers.cs" />
+    <Compile Include="Processor\CPU_Support.cs" />
+    <Compile Include="Processor\Flags.cs" />
+    <Compile Include="Display\CharacterSet.cs" />
+    <Compile Include="EventHandlers.cs" />
+    <Compile Include="Display\Gpu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Display\Gpu.Designer.cs">
+      <DependentUpon>Gpu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="QueueExtensions.cs" />
+    <Compile Include="UI\ConfigurationWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\ConfigurationWindow.Designer.cs">
+      <DependentUpon>ConfigurationWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\CPUWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\CPUWindow.Designer.cs">
+      <DependentUpon>CPUWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\About.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\About.Designer.cs">
+      <DependentUpon>About.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FoenixSystem.cs" />
+    <Compile Include="Devices\BasicMemory.cs" />
+    <Compile Include="MemoryLocations\MemoryMap_Page00.cs" />
+    <Compile Include="MemoryLocations\MemoryManager.cs" />
+    <Compile Include="Processor\Operations.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Processor\Register.cs" />
+    <Compile Include="UI\MemoryWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MemoryWindow.Designer.cs">
+      <DependentUpon>MemoryWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\OPLWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\OPLWindow.Designer.cs">
+      <DependentUpon>OPLWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\RegisterControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\RegisterControl.Designer.cs">
+      <DependentUpon>RegisterControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\RegisterDisplay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\RegisterDisplay.Designer.cs">
+      <DependentUpon>RegisterDisplay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SystemLog.cs" />
+    <Compile Include="UI\BitmapLoader.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\BitmapLoader.Designer.cs">
+      <DependentUpon>BitmapLoader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\SDCardWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SDCardWindow.Designer.cs">
+      <DependentUpon>SDCardWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\SerialTerminal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SerialTerminal.Designer.cs">
+      <DependentUpon>SerialTerminal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\TileEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\TileEditor.Designer.cs">
+      <DependentUpon>TileEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\UploaderWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\UploaderWindow.Designer.cs">
+      <DependentUpon>UploaderWindow.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Display\Gpu.resx">
+      <DependentUpon>Gpu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\ConfigurationWindow.resx">
+      <DependentUpon>ConfigurationWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CPUWindow.resx">
+      <DependentUpon>CPUWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\About.resx">
+      <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="UI\MemoryWindow.resx">
+      <DependentUpon>MemoryWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\OPLWindow.resx">
+      <DependentUpon>OPLWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\RegisterControl.resx">
+      <DependentUpon>RegisterControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\RegisterDisplay.resx">
+      <DependentUpon>RegisterDisplay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\BitmapLoader.resx">
+      <DependentUpon>BitmapLoader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\SDCardWindow.resx">
+      <DependentUpon>SDCardWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\SerialTerminal.resx">
+      <DependentUpon>SerialTerminal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\TileEditor.resx">
+      <DependentUpon>TileEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\UploaderWindow.resx">
+      <DependentUpon>UploaderWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="Resources\Bm437_PhoenixEGA_8x8.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Resources\C64_TrueType_v1.2-STYLE.zip" />
+    <None Include="Resources\FOENIX-CHARACTER-ASCII.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
+    <None Include="Resources\foenix-96x96.png" />
+    <Content Include="inpout32.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\PET-ASCII.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\SDCardDebugger\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

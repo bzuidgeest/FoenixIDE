@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>FoenixIDE</AssemblyName>
+    <RootNamespace>FoenixIDE.Simulator</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;WAVE_TABLEMUL</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;WAVE_TABLEMUL</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Devices\Audio\SoftSynth\OPL\Nuked\Nuked.cs" />
+    <Compile Remove="Devices\Audio\SoftSynth\OPL\Nuked\NukedData.cs" />
+    <Compile Remove="Devices\Audio\SoftSynth\OPL\Nuked\NukedEnumerations.cs" />
+    <Compile Remove="Devices\Audio\SoftSynth\OPL\Nuked\NukedOPL.cs" />
+    <Compile Remove="Devices\Audio\SoftSynth\OPL\Nuked\NukedSlot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\Nuked.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedData.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedEnumerations.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedOPL.cs" />
+    <None Include="Devices\Audio\SoftSynth\OPL\Nuked\NukedSlot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DequeNET" Version="1.0.2" />
+    <PackageReference Include="ini-parser" Version="2.5.2" />
+    <PackageReference Include="InpOut32" Version="1.5.0.1" />
+    <PackageReference Include="NAudio" Version="1.9.0" />
+    <PackageReference Include="System.IO.Ports" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="inpout32.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="kernel.hex">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="kernel.lst">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

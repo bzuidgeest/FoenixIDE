@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="Display\Gpu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\About.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\BitmapLoader.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\ConfigurationWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\CPUWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\MemoryWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\OPLWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\RegisterControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\RegisterDisplay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\SDCardWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\SerialTerminal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\TileEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\UploaderWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

@@ -30,7 +30,7 @@ namespace FoenixIDE.Display
         byte[] gammaCorrection = null;
 
         public BasicMemory VRAM = null;
-        public BasicMemory RAM = null;
+        //public BasicMemory RAM = null;
         public BasicMemory VICKY = null;
         
         public int paintCycle = 0;
@@ -120,7 +120,8 @@ namespace FoenixIDE.Display
                 e.Graphics.DrawString("VRAM Not Initialized", this.Font, TextBrush, 0, 0);
                 return;
             }
-            if (RAM == null || DesignMode)
+            //if (RAM == null || DesignMode)
+            if (DesignMode)
             {
                 e.Graphics.DrawString("RAM Not Initialized", this.Font, TextBrush, 0, 0);
                 return;
@@ -678,8 +679,8 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return false;
+                //if (RAM == null)
+                //    return false;
 
                 return (VICKY.ReadByte(MemoryMap.VKY_TXT_CURSOR_CTRL_REG - MemoryMap.VICKY_START) & 1) == 1;
             }
@@ -699,9 +700,10 @@ namespace FoenixIDE.Display
 
         private int GetCharPos(int row, int col)
         {
-            if (RAM == null)
-                return 0;
-            int baseAddress = RAM.ReadLong(MemoryMap.SCREENBEGIN);
+            //if (RAM == null)
+            //    return 0;
+            //int baseAddress = RAM.ReadLong(MemoryMap.SCREENBEGIN);
+            int baseAddress = FoenixSystem.Current.MemoryManager.ReadLong(MemoryMap.SCREENBEGIN);
             return baseAddress + row * COLS_PER_LINE + col;
         }
 
@@ -713,10 +715,11 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.CURSORX);
+                //return RAM.ReadByte(MemoryMap.CURSORX);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.CURSORX);
             }
         }
 
@@ -728,10 +731,11 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.CURSORY);
+                //return RAM.ReadByte(MemoryMap.CURSORY);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.CURSORY);
             }
         }
 
@@ -740,10 +744,12 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.COLS_VISIBLE);
+                //return RAM.ReadByte(MemoryMap.COLS_VISIBLE);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.COLS_VISIBLE);
+                
             }
         }
 
@@ -752,9 +758,10 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
-                return RAM.ReadByte(MemoryMap.LINES_VISIBLE);
+                //if (RAM == null)
+                //    return 0;
+                //return RAM.ReadByte(MemoryMap.LINES_VISIBLE);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.LINES_VISIBLE);
             }
         }
 
@@ -762,10 +769,11 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.COLS_PER_LINE);
+                //return RAM.ReadByte(MemoryMap.COLS_PER_LINE);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.COLS_PER_LINE);
             }
         }
 
@@ -778,9 +786,10 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
-                return RAM.ReadWord(MemoryMap.CURSORPOS);
+                //if (RAM == null)
+                //    return 0;
+                //return RAM.ReadWord(MemoryMap.CURSORPOS);
+                return FoenixSystem.Current.MemoryManager.ReadWord(MemoryMap.CURSORPOS);
             }
         }
     }

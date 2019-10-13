@@ -155,7 +155,7 @@ namespace FoenixIDE.UI
             {
                 memoryWindow = new MemoryWindow
                 {
-                    Memory = system.RAM,
+                    // fix Memory = system.RAM,
                     Left = debugWindow.Left,
                     Top = debugWindow.Top + debugWindow.Height
                 };
@@ -187,7 +187,7 @@ namespace FoenixIDE.UI
                 int left = this.Left + (this.Width - uploaderWindow.Width) / 2;
                 int top =  this.Top + (this.Height - uploaderWindow.Height) / 2;
                 uploaderWindow.Location = new Point(left, top);
-                uploaderWindow.Memory = system.CPU.Memory;
+                uploaderWindow.Memory = system.CPU.memoryManager;
                 uploaderWindow.Show();
             }
             else
@@ -209,7 +209,7 @@ namespace FoenixIDE.UI
             BitmapLoader loader = new BitmapLoader
             {
                 StartPosition = FormStartPosition.CenterParent,
-                Memory = system.CPU.Memory,
+                Memory = system.CPU.memoryManager,
                 ResChecker = ResChecker
             };
             loader.OnTileLoaded += NewTileLoaded;

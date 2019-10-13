@@ -153,7 +153,8 @@ namespace FoenixIDE.UI
                                             e.Graphics.FillRectangle(yellowBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                                         }
                                         // Check if the memory still matches the opcodes
-                                        if (!q0.CheckOpcodes(system.RAM))
+                                        //if (!q0.CheckOpcodes(system.RAM))
+                                        if (!q0.CheckOpcodes())
                                         {
                                             e.Graphics.FillRectangle(redBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                                         }
@@ -190,7 +191,8 @@ namespace FoenixIDE.UI
                                 e.Graphics.FillRectangle(orangeBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                             }
                             // Check if the memory still matches the opcodes
-                            if (!line.CheckOpcodes(system.RAM))
+                            //if (!line.CheckOpcodes(system.RAM))
+                            if (!line.CheckOpcodes())
                             {
                                 e.Graphics.FillRectangle(redBrush, 0, painted * ROW_HEIGHT, this.Width, ROW_HEIGHT);
                             }
@@ -431,7 +433,7 @@ namespace FoenixIDE.UI
                 while (i > 0)
                 {
                     int address = system.CPU.Stack.Value + i;
-                    stackText.AppendText(address.ToString("X4") + " " + system.CPU.Memory[address].ToString("X2") + "\r\n");
+                    stackText.AppendText(address.ToString("X4") + " " + system.CPU.memoryManager[address].ToString("X2") + "\r\n");
                     i--;
                 }
             }
@@ -537,7 +539,8 @@ namespace FoenixIDE.UI
             byte[] command = new byte[cmdLength];
             for (int i = 0; i < cmdLength; i++)
             {
-                command[i] = FoenixSystem.Current.RAM.ReadByte(pc + i);
+                //command[i] = FoenixSystem.Current.RAM.ReadByte(pc + i);
+                command[i] = FoenixSystem.Current.MemoryManager.ReadByte(pc + i);
             }
             string opcodes = oc.ToString(system.CPU.ReadSignature(oc, pc));
             //string status = "";

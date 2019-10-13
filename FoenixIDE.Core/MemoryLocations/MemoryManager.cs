@@ -29,7 +29,7 @@ namespace FoenixIDE.MemoryLocations
         private Dictionary<int, IMemoryMappedDevice> DevicesByIndex { get; } = new Dictionary<int, IMemoryMappedDevice>();
 
 
-        
+
 
         public MemoryManager()
         {
@@ -49,7 +49,7 @@ namespace FoenixIDE.MemoryLocations
             DevicesByName.Add(device.Name, device);
             int index = 0;
             if (DevicesByIndex.Keys.Count != 0)
-             index = DevicesByIndex.Keys.Max() + 1;
+                index = DevicesByIndex.Keys.Max() + 1;
             DevicesByIndex.Add(index, device);
             memoryMap.AsSpan(device.BaseAddress, device.Size).Fill(index);
         }
@@ -70,8 +70,17 @@ namespace FoenixIDE.MemoryLocations
         /// <param name="deviceStartAddress"></param>
         public void GetDeviceAt(int address, out IMemoryMappedDevice device, out int deviceStartAddress)
         {
-            device = DevicesByIndex[memoryMap[address]];
-            deviceStartAddress = address - device.BaseAddress;
+            int deviceIndex = memoryMap[address];
+            if (deviceIndex != -1)
+            {
+                device = DevicesByIndex[deviceIndex];
+                deviceStartAddress = address - device.BaseAddress;
+            }
+            else
+            {
+                device = null;
+                deviceStartAddress = address;
+            }
         }
 
         public IMemoryMappedDevice GetDeviceByName(string name)
@@ -97,12 +106,13 @@ namespace FoenixIDE.MemoryLocations
         /// </summary>
         public byte ReadByte(int address)
         {
-
-            GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
             if (memoryMap[address] == -1)
                 return memory[address];
             else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
                 return device.ReadByte(deviceAddress);
+            }
         }
 
         /// <summary>
@@ -110,10 +120,17 @@ namespace FoenixIDE.MemoryLocations
         /// </summary>
         /// <param name="Address"></param>
         /// <returns></returns>
-        public int ReadWord(int Address)
+        public int ReadWord(int address)
         {
-            GetDeviceAt(Address, out IMemoryMappedDevice device, out int deviceAddress);
-            return device.ReadByte(deviceAddress) | (device.ReadByte(deviceAddress + 1) << 8);
+            if (memoryMap[address] == -1)
+            {
+                return memory[address] | (memory[address + 1] << 8);
+            }
+            else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+                return device.ReadByte(deviceAddress) | (device.ReadByte(deviceAddress + 1) << 8);
+            }
         }
 
         /// <summary>
@@ -121,61 +138,112 @@ namespace FoenixIDE.MemoryLocations
         /// </summary>
         /// <param name="addr"></param>
         /// <returns></returns>
-        public int ReadLong(int Address)
+        public int ReadLong(int address)
         {
-            GetDeviceAt(Address, out IMemoryMappedDevice device, out int deviceAddress);
-            return device.ReadByte(deviceAddress)
-                | (device.ReadByte(deviceAddress + 1) << 8)
-                | (device.ReadByte(deviceAddress + 2) << 16);
+            if (memoryMap[address] == -1)
+            {
+                return memory[address]
+                   | (memory[address + 1] << 8)
+                   | (memory[address + 2] << 16);
+            }
+            else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+                return device.ReadByte(deviceAddress)
+                    | (device.ReadByte(deviceAddress + 1) << 8)
+                    | (device.ReadByte(deviceAddress + 2) << 16);
+            }
         }
 
         public virtual void WriteByte(int address, byte value)
         {
-            GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+
             //device.WriteByte(deviceAddress, Value);
             if (memoryMap[address] == -1)
                 memory[address] = value;
             else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
                 DevicesByIndex[memoryMap[address]].WriteByte(deviceAddress, value);
+            }
         }
 
-        public void WriteWord(int Address, int Value)
+        public void WriteWord(int address, int value)
         {
-            GetDeviceAt(Address, out IMemoryMappedDevice device, out int deviceAddress);
-            device.WriteByte(deviceAddress, (byte)(Value & 0xff));
-            device.WriteByte(deviceAddress + 1, (byte)(Value >> 8 & 0xff));
+            if (memoryMap[address] == -1)
+            {
+                memory[address] = (byte)(value & 0xff);
+                memory[address + 1] = (byte)(value >> 8 & 0xff);
+            }
+            else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+                device.WriteByte(deviceAddress, (byte)(value & 0xff));
+                device.WriteByte(deviceAddress + 1, (byte)(value >> 8 & 0xff));
+            }
         }
 
-        public void WriteLong(int Address, int Value)
+        public void WriteLong(int address, int value)
         {
-            GetDeviceAt(Address, out IMemoryMappedDevice device, out int deviceAddress);
-            device.WriteByte(deviceAddress, (byte)(Value & 0xff));
-            device.WriteByte(deviceAddress + 1, (byte)(Value >> 8 & 0xff));
-            device.WriteByte(deviceAddress + 2, (byte)(Value >> 16 & 0xff));
+            if (memoryMap[address] == -1)
+            {
+                memory[address] = (byte)(value & 0xff);
+                memory[address + 1] = (byte)(value >> 8 & 0xff);
+                memory[address + 2] = (byte)(value >> 16 & 0xff);
+            }
+            else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+                device.WriteByte(deviceAddress, (byte)(value & 0xff));
+                device.WriteByte(deviceAddress + 1, (byte)(value >> 8 & 0xff));
+                device.WriteByte(deviceAddress + 2, (byte)(value >> 16 & 0xff));
+            }
         }
 
-        public int Read(int Address, int Length)
+        public int Read(int address, int length)
         {
-            GetDeviceAt(Address, out IMemoryMappedDevice device, out int deviceAddress);
-            int addr = deviceAddress;
-            int ret = device.ReadByte(addr);
-            if (Length >= 2)
-                ret += device.ReadByte(addr + 1) << 8;
-            if (Length >= 3)
-                ret += device.ReadByte(addr + 2) << 16;
-            return ret;
+            if (memoryMap[address] == -1)
+            {
+                int ret = memory[address];
+                if (length >= 2)
+                    ret += memory[address + 1] << 8;
+                if (length >= 3)
+                    ret += memory[address + 2] << 16;
+                return ret;
+            }
+            else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+                int ret = device.ReadByte(deviceAddress);
+                if (length >= 2)
+                    ret += device.ReadByte(deviceAddress + 1) << 8;
+                if (length >= 3)
+                    ret += device.ReadByte(deviceAddress + 2) << 16;
+                return ret;
+            }
         }
 
-        internal void Write(int Address, int Value, int Length)
+        internal void Write(int address, int value, int length)
         {
-            GetDeviceAt(Address, out IMemoryMappedDevice device, out int deviceAddress);
-            if (device == null)
-                throw new Exception("No device at " + Address.ToString("X6"));
-            device.WriteByte(deviceAddress, (byte)(Value & 0xff));
-            if (Length >= 2)
-                device.WriteByte(deviceAddress + 1, (byte)(Value >> 8 & 0xff));
-            if (Length >= 3)
-                device.WriteByte(deviceAddress + 2, (byte)(Value >> 16 & 0xff));
+            if (memoryMap[address] == -1)
+            {
+                memory[address] = (byte)(value & 0xff);
+                if (length >= 2)
+                    memory[address + 1] = (byte)(value >> 8 & 0xff);
+                if (length >= 3)
+                    memory[address + 2] = (byte)(value >> 16 & 0xff);
+            }
+            else
+            {
+                GetDeviceAt(address, out IMemoryMappedDevice device, out int deviceAddress);
+                if (device == null)
+                    throw new Exception("No device at " + address.ToString("X6"));
+                device.WriteByte(deviceAddress, (byte)(value & 0xff));
+                if (length >= 2)
+                    device.WriteByte(deviceAddress + 1, (byte)(value >> 8 & 0xff));
+                if (length >= 3)
+                    device.WriteByte(deviceAddress + 2, (byte)(value >> 16 & 0xff));
+            }
         }
 
         internal void Copy(int sourceAddress, int destinationAddress, int length)

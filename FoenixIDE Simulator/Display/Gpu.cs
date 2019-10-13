@@ -29,7 +29,7 @@ namespace FoenixIDE.Display
         int[] graphicsLUT = null;
         byte[] gammaCorrection = null;
 
-        public BasicMemory VRAM = null;
+        //public BasicMemory VRAM = null;
         //public BasicMemory RAM = null;
         public BasicMemory VICKY = null;
         
@@ -115,11 +115,11 @@ namespace FoenixIDE.Display
                 e.Graphics.DrawString("IO Memory Not Initialized", this.Font, TextBrush, 0, 0);
                 return;
             }
-            if (VRAM == null)
-            {
-                e.Graphics.DrawString("VRAM Not Initialized", this.Font, TextBrush, 0, 0);
-                return;
-            }
+            //if (VRAM == null)
+            //{
+            //    e.Graphics.DrawString("VRAM Not Initialized", this.Font, TextBrush, 0, 0);
+            //    return;
+            //}
             //if (RAM == null || DesignMode)
             if (DesignMode)
             {
@@ -485,7 +485,9 @@ namespace FoenixIDE.Display
             {
                 for (int col = 0; col < width; col++)
                 {
-                    value = graphicsLUT[lutIndex * 256 + VRAM.ReadByte(bitmapAddress++)];
+                    //value = graphicsLUT[lutIndex * 256 + VRAM.ReadByte(bitmapAddress++)];
+                    value = graphicsLUT[lutIndex * 256 + FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VICKY_START + bitmapAddress++)];
+                    // fix: do gamma correction on LUT
                     if (gammaCorrection != null )
                     {
                         value = (int)((gammaCorrection[(value & 0x00FF0000) >> 0x10] << 0x10) +
@@ -540,7 +542,9 @@ namespace FoenixIDE.Display
                         for (int col = 0; col < 16; col++)
                         {
                             // Lookup the pixel in the tileset
-                            pixelIndex = VRAM.ReadByte(tilesetAddress + ((tile / 16) * 256 * 16 + (tile % 16) * 16) + col + line * strideX);
+                            //pixelIndex = VRAM.ReadByte(tilesetAddress + ((tile / 16) * 256 * 16 + (tile % 16) * 16) + col + line * strideX);
+                            //fix split out static video start address value 
+                            pixelIndex = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VIDEO_START + tilesetAddress + ((tile / 16) * 256 * 16 + (tile % 16) * 16) + col + line * strideX);
                             if (pixelIndex != 0)
                             {
                                 value = (int)graphicsLUT[lutIndex * 256 + pixelIndex];
@@ -594,7 +598,8 @@ namespace FoenixIDE.Display
                         for (int col = 0; col < 32; col++)
                         {
                             // Lookup the pixel in the tileset
-                            pixelIndex = VRAM.ReadByte(spriteAddress++);
+                            //pixelIndex = VRAM.ReadByte(spriteAddress++);
+                            pixelIndex = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VIDEO_START + spriteAddress++);
                             if (pixelIndex != 0)
                             {
                                 value = (int)graphicsLUT[lutIndex * 256 + pixelIndex];

@@ -21,7 +21,7 @@ namespace FoenixIDE
         /* should replace this fixed access points with somthing dynamix */
         //public BasicMemory RAM;
         public BasicMemory VICKY;
-        public BasicMemory VIDEO;
+        //public BasicMemory VIDEO;
         public BasicMemory FLASH;
         public BasicMemory BEATRIX;
         public MathCoproRegisters MATH = null;
@@ -85,8 +85,8 @@ namespace FoenixIDE
             //MemoryManager.AddDevice(RAM);
             VICKY = new BasicMemory("Vicky", MemoryMap.VICKY_START, MemoryMap.VICKY_SIZE);   // 60K
             MemoryManager.AddDevice(VICKY);
-            VIDEO = new BasicMemory("Video", MemoryMap.VIDEO_START, MemoryMap.VIDEO_SIZE - 1); // 4MB Video
-            MemoryManager.AddDevice(VIDEO);
+            //VIDEO = new BasicMemory("Video", MemoryMap.VIDEO_START, MemoryMap.VIDEO_SIZE - 1); // 4MB Video
+            //MemoryManager.AddDevice(VIDEO);
             FLASH = new BasicMemory("Flash", MemoryMap.FLASH_START, MemoryMap.FLASH_SIZE); // 8MB RAM
             MemoryManager.AddDevice(FLASH);
             BEATRIX = new BasicMemory("Beatrix", MemoryMap.BEATRIX_START, MemoryMap.BEATRIX_SIZE); // 4K 
@@ -117,7 +117,7 @@ namespace FoenixIDE
             this.CPU = new CPU(MemoryManager);
             this.CPU.SimulatorCommand += CPU_SimulatorCommand;
 
-            gpu.VRAM = VIDEO;
+            //gpu.VRAM = VIDEO;
             //gpu.RAM = RAM; 
             gpu.VICKY = VICKY;
             

@@ -69,7 +69,7 @@ namespace FoenixIDE.Simulator.UI
             {
                 for (int x = 0; x < 256; x++)
                 {
-                    byte pixel = FoenixSystem.Current.VIDEO.ReadByte(LayersetAddress + y * 256 + x);
+                    byte pixel = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VIDEO_START + LayersetAddress + y * 256 + x);
                     if (pixel != 0)
                     {
                         int color = graphicsLUT[lut * 256 + pixel];

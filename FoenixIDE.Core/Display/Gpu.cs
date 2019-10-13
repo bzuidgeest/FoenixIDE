@@ -20,7 +20,7 @@ namespace FoenixIDE.Display
         const int MAX_TEXT_COLS = 128;
         const int MAX_TEXT_LINES = 64;
         const int SCREEN_PAGE_SIZE = 128 * 64;
-        
+
         const int charWidth = 8;
         const int charHeight = 8;
         const int tileSize = 16;
@@ -29,10 +29,10 @@ namespace FoenixIDE.Display
         int[] graphicsLUT = null;
         byte[] gammaCorrection = null;
 
-        public BasicMemory VRAM = null;
-        public BasicMemory RAM = null;
+        //public BasicMemory VRAM = null;
+        //public BasicMemory RAM = null;
         public BasicMemory VICKY = null;
-        
+
         public int paintCycle = 0;
         private bool tileEditorMode = false;
         public bool MousePointerMode = false;
@@ -108,7 +108,6 @@ namespace FoenixIDE.Display
         private volatile bool drawing = false;
         void Gpu_Paint(object sender, PaintEventArgs e)
         {
-            
             paintCycle++;
 
             if (VICKY == null)
@@ -116,12 +115,13 @@ namespace FoenixIDE.Display
                 e.Graphics.DrawString("IO Memory Not Initialized", this.Font, TextBrush, 0, 0);
                 return;
             }
-            if (VRAM == null)
-            {
-                e.Graphics.DrawString("VRAM Not Initialized", this.Font, TextBrush, 0, 0);
-                return;
-            }
-            if (RAM == null || DesignMode)
+            //if (VRAM == null)
+            //{
+            //    e.Graphics.DrawString("VRAM Not Initialized", this.Font, TextBrush, 0, 0);
+            //    return;
+            //}
+            //if (RAM == null || DesignMode)
+            if (DesignMode)
             {
                 e.Graphics.DrawString("RAM Not Initialized", this.Font, TextBrush, 0, 0);
                 return;
@@ -133,7 +133,7 @@ namespace FoenixIDE.Display
                 e.Graphics.DrawString("Graphics Mode disabled", this.Font, TextBrush, 0, 0);
                 return;
             }
-            
+
             if (drawing)
             {
                 return;
@@ -211,13 +211,13 @@ namespace FoenixIDE.Display
                 Brush graphBackgroundBrush = new SolidBrush(Color.FromArgb(backgroundColor));
                 g.FillRectangle(graphBackgroundBrush, colOffset, rowOffset, 640 - 2 * colOffset, 480 - 2 * rowOffset);
             }
-       
+
             // Bitmap Mode
             if ((MCRegister & 0x8) == 0x8)
             {
                 DrawBitmap(frameBuffer, displayBorder);
             }
-            
+
             for (int layer = 4; layer > 0; --layer)
             {
                 if ((MCRegister & 0x10) == 0x10)
@@ -258,7 +258,6 @@ namespace FoenixIDE.Display
             }
             e.Graphics.DrawImage(frameBuffer, ClientRectangle);
             drawing = false;
-            
         }
 
         public static byte[] LoadGammaCorrection(BasicMemory VKY)
@@ -266,7 +265,7 @@ namespace FoenixIDE.Display
             // Read the color lookup tables
             int gamAddress = MemoryMap.GAMMA_BASE_ADDR - MemoryMap.VICKY_BASE_ADDR;
             // 
-            byte[] result = new byte[3*256];
+            byte[] result = new byte[3 * 256];
             FoenixSystem.Current.MemoryManager.Copy(gamAddress, result, 0, 3 * 256);
             return result;
         }
@@ -320,7 +319,7 @@ namespace FoenixIDE.Display
             int y;
 
             Graphics gr = Graphics.FromImage(bitmap);
-            
+
             // Read the color lookup tables
             int fgLUT = MemoryLocations.MemoryMap.FG_CHAR_LUT_PTR - VICKY.BaseAddress;
             int bgLUT = MemoryLocations.MemoryMap.BG_CHAR_LUT_PTR - VICKY.BaseAddress;
@@ -387,7 +386,7 @@ namespace FoenixIDE.Display
                     // Each character is defined by 8 bytes
                     for (int i = 0; i < 8; i++)
                     {
-                        int offset = (x + (y + i ) * 640 ) * 4;
+                        int offset = (x + (y + i) * 640) * 4;
                         byte value = VICKY.ReadByte(fontBaseAddress + character * 8 + i);
                         if ((value & 0x80) == 0x80)
                         {
@@ -478,7 +477,7 @@ namespace FoenixIDE.Display
             int width = VICKY.ReadWord(0xAF_0144 - MemoryMap.VICKY_BASE_ADDR);
             int height = VICKY.ReadWord(0xAF_0146 - MemoryMap.VICKY_BASE_ADDR);
 
-            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0,0,640, 480), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, 640, 480), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             IntPtr p = bitmapData.Scan0;
             int value = 0;
 
@@ -486,8 +485,10 @@ namespace FoenixIDE.Display
             {
                 for (int col = 0; col < width; col++)
                 {
-                    value = graphicsLUT[lutIndex * 256 + VRAM.ReadByte(bitmapAddress++)];
-                    if (gammaCorrection != null )
+                    //value = graphicsLUT[lutIndex * 256 + VRAM.ReadByte(bitmapAddress++)];
+                    value = graphicsLUT[lutIndex * 256 + FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VICKY_START + bitmapAddress++)];
+                    // fix: do gamma correction on LUT
+                    if (gammaCorrection != null)
                     {
                         value = (int)((gammaCorrection[(value & 0x00FF0000) >> 0x10] << 0x10) +
                                       (gammaCorrection[0x100 + ((value & 0x0000FF00) >> 0x08)] << 0x08) +
@@ -524,7 +525,7 @@ namespace FoenixIDE.Display
             BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, 16, 16), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             IntPtr p = bitmapData.Scan0;
 
-            int colOffset = bkgrnd ? (80 - ColumnsVisible) / 2 * charWidth / tileSize: 0;
+            int colOffset = bkgrnd ? (80 - ColumnsVisible) / 2 * charWidth / tileSize : 0;
             int lineOffset = bkgrnd ? (60 - lines) / 2 * charHeight / tileSize : 0;
 
             for (int tileRow = lineOffset; tileRow < (30 - lineOffset); tileRow++)
@@ -541,7 +542,9 @@ namespace FoenixIDE.Display
                         for (int col = 0; col < 16; col++)
                         {
                             // Lookup the pixel in the tileset
-                            pixelIndex = VRAM.ReadByte(tilesetAddress + ((tile / 16) * 256 * 16 + (tile % 16) * 16) + col + line * strideX);
+                            //pixelIndex = VRAM.ReadByte(tilesetAddress + ((tile / 16) * 256 * 16 + (tile % 16) * 16) + col + line * strideX);
+                            //fix split out static video start address value 
+                            pixelIndex = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VIDEO_START + tilesetAddress + ((tile / 16) * 256 * 16 + (tile % 16) * 16) + col + line * strideX);
                             if (pixelIndex != 0)
                             {
                                 value = (int)graphicsLUT[lutIndex * 256 + pixelIndex];
@@ -595,7 +598,8 @@ namespace FoenixIDE.Display
                         for (int col = 0; col < 32; col++)
                         {
                             // Lookup the pixel in the tileset
-                            pixelIndex = VRAM.ReadByte(spriteAddress++);
+                            //pixelIndex = VRAM.ReadByte(spriteAddress++);
+                            pixelIndex = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VIDEO_START + spriteAddress++);
                             if (pixelIndex != 0)
                             {
                                 value = (int)graphicsLUT[lutIndex * 256 + pixelIndex];
@@ -623,7 +627,7 @@ namespace FoenixIDE.Display
             int Y = VICKY.ReadWord(0x704);
 
             byte mouseReg = VICKY.ReadByte(0x700);
-            int pointerAddress = 0xAF_0500  - VICKY.BaseAddress;
+            int pointerAddress = 0xAF_0500 - VICKY.BaseAddress;
             if ((mouseReg & 2) == 2)
             {
                 pointerAddress += 0x100;
@@ -638,7 +642,7 @@ namespace FoenixIDE.Display
                 for (int col = 0; col < colsToDraw; col++)
                 {
                     // Values are 0: transparent, 1:black, 255: white (gray scales)
-                    byte pixelIndexR = VICKY.ReadByte(pointerAddress+line *  16 + col);
+                    byte pixelIndexR = VICKY.ReadByte(pointerAddress + line * 16 + col);
                     byte pixelIndexG = pixelIndexR;
                     byte pixelIndexB = pixelIndexR;
                     if (pixelIndexR != 0)
@@ -680,8 +684,8 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return false;
+                //if (RAM == null)
+                //    return false;
 
                 return (VICKY.ReadByte(MemoryMap.VKY_TXT_CURSOR_CTRL_REG - MemoryMap.VICKY_START) & 1) == 1;
             }
@@ -701,9 +705,10 @@ namespace FoenixIDE.Display
 
         private int GetCharPos(int row, int col)
         {
-            if (RAM == null)
-                return 0;
-            int baseAddress = RAM.ReadLong(MemoryMap.SCREENBEGIN);
+            //if (RAM == null)
+            //    return 0;
+            //int baseAddress = RAM.ReadLong(MemoryMap.SCREENBEGIN);
+            int baseAddress = FoenixSystem.Current.MemoryManager.ReadLong(MemoryMap.SCREENBEGIN);
             return baseAddress + row * COLS_PER_LINE + col;
         }
 
@@ -715,10 +720,11 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.CURSORX);
+                //return RAM.ReadByte(MemoryMap.CURSORX);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.CURSORX);
             }
         }
 
@@ -730,10 +736,11 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.CURSORY);
+                //return RAM.ReadByte(MemoryMap.CURSORY);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.CURSORY);
             }
         }
 
@@ -742,10 +749,12 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.COLS_VISIBLE);
+                //return RAM.ReadByte(MemoryMap.COLS_VISIBLE);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.COLS_VISIBLE);
+
             }
         }
 
@@ -754,9 +763,10 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
-                return RAM.ReadByte(MemoryMap.LINES_VISIBLE);
+                //if (RAM == null)
+                //    return 0;
+                //return RAM.ReadByte(MemoryMap.LINES_VISIBLE);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.LINES_VISIBLE);
             }
         }
 
@@ -764,10 +774,11 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
+                //if (RAM == null)
+                //    return 0;
 
-                return RAM.ReadByte(MemoryMap.COLS_PER_LINE);
+                //return RAM.ReadByte(MemoryMap.COLS_PER_LINE);
+                return FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.COLS_PER_LINE);
             }
         }
 
@@ -780,9 +791,10 @@ namespace FoenixIDE.Display
         {
             get
             {
-                if (RAM == null)
-                    return 0;
-                return RAM.ReadWord(MemoryMap.CURSORPOS);
+                //if (RAM == null)
+                //    return 0;
+                //return RAM.ReadWord(MemoryMap.CURSORPOS);
+                return FoenixSystem.Current.MemoryManager.ReadWord(MemoryMap.CURSORPOS);
             }
         }
     }

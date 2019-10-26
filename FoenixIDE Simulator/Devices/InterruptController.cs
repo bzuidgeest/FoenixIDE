@@ -12,7 +12,7 @@ namespace FoenixIDE.Simulator.Devices
 
         public int BaseAddress { get; }
         public string Name { get { return this.GetType().ToString(); } }
-        public int Size { get { return 3; } }
+        public int Size { get { return 3; } } 
 
         public InterruptController(int baseAddress)
         {

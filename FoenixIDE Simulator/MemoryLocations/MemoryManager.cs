@@ -255,5 +255,11 @@ namespace FoenixIDE.MemoryLocations
         {
             Array.Copy(memory, sourceAddress, buffer, destAddress, length);
         }
+
+        internal void CopyToMemory(byte[] buffer, int sourceAddress, int destAddress, int length)
+        {
+            Array.Copy(buffer, sourceAddress, memory, destAddress, length);
+        }
+
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
 using FoenixIDE.Simulator.Devices;
+using System.IO;
 
 namespace FoenixIDE.Display
 {
@@ -43,7 +44,7 @@ namespace FoenixIDE.Display
 
         public int StartAddress;
         public int Length;
-        public BasicMemory CharacterData;
+        //public BasicMemory CharacterData;
         //private int charWidth = 8;
         private int charHeight = 8;
 
@@ -55,10 +56,11 @@ namespace FoenixIDE.Display
         /// <returns></returns>
         public byte Read(int CharacterCode, int Row)
         {
-            if (CharacterData == null)
-                return 0;
+            //if (CharacterData == null)
+            //    return 0;
             int addr = StartAddress + CharacterCode * charHeight + Row;
-            return CharacterData.ReadByte(addr);
+            //return CharacterData.ReadByte(addr);
+            return FoenixSystem.Current.MemoryManager.ReadByte(addr);
         }
 
         /// <summary>
@@ -68,16 +70,17 @@ namespace FoenixIDE.Display
         /// <param name="Vram">array to store glyph data</param>
         /// <param name="StartAddress">starting address in array</param>
         /// <param name="newCharSize">Size of glyhphs (8x8 or 8x16)</param>
-        public void Load(string Filename, int Offset, BasicMemory Vram, int StartAddress, SizeCodes newCharSize)
+        public void Load(string Filename, int Offset, int StartAddress, SizeCodes newCharSize)
         {
             this.StartAddress = StartAddress;
             this.CharSize = newCharSize;
-            this.CharacterData = Vram;
+            //this.CharacterData = Vram;
 
             try
             {
-                byte[] d = global::System.IO.File.ReadAllBytes(Filename);
-                Vram.Load(d, Offset, StartAddress, d.Length - Offset);
+                byte[] d = File.ReadAllBytes(Filename);
+                //Vram.Load(d, Offset, StartAddress, d.Length - Offset);
+                FoenixSystem.Current.MemoryManager.CopyToMemory(d, Offset, StartAddress, d.Length - Offset);
             }
             catch (Exception ex)
             {

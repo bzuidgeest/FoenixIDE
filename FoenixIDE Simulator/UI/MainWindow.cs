@@ -1,5 +1,6 @@
 ﻿using FoenixIDE.Basic;
 using FoenixIDE.Display;
+using FoenixIDE.MemoryLocations;
 using FoenixIDE.Simulator.Devices;
 using FoenixIDE.Simulator.FileFormat;
 using FoenixIDE.Simulator.UI;
@@ -284,14 +285,23 @@ namespace FoenixIDE.UI
             cpsPerf.Text = "CPS: " + cps.ToString("N0");
             fpsPerf.Text = "FPS: " + fps.ToString("N0");
             // write the time to memory - values are BCD
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_SEC - system.VICKY.BaseAddress, BCD(currentTime.Second));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MIN - system.VICKY.BaseAddress, BCD(currentTime.Minute));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_HRS - system.VICKY.BaseAddress, BCD(currentTime.Hour));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DAY - system.VICKY.BaseAddress, BCD(currentTime.Day));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH - system.VICKY.BaseAddress, BCD(currentTime.Month));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR - system.VICKY.BaseAddress, BCD(currentTime.Year % 100));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY - system.VICKY.BaseAddress, BCD(currentTime.Year / 100));
-            system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DOW - system.VICKY.BaseAddress, (byte)(currentTime.DayOfWeek+1));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_SEC - system.VICKY.BaseAddress, BCD(currentTime.Second));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MIN - system.VICKY.BaseAddress, BCD(currentTime.Minute));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_HRS - system.VICKY.BaseAddress, BCD(currentTime.Hour));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DAY - system.VICKY.BaseAddress, BCD(currentTime.Day));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH - system.VICKY.BaseAddress, BCD(currentTime.Month));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR - system.VICKY.BaseAddress, BCD(currentTime.Year % 100));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY - system.VICKY.BaseAddress, BCD(currentTime.Year / 100));
+            //system.VICKY.WriteByte(MemoryLocations.MemoryMap.RTC_DOW - system.VICKY.BaseAddress, (byte)(currentTime.DayOfWeek+1));
+
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_SEC, BCD(currentTime.Second));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_MIN, BCD(currentTime.Minute));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_HRS, BCD(currentTime.Hour));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_DAY, BCD(currentTime.Day));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_MONTH, BCD(currentTime.Month));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_YEAR, BCD(currentTime.Year % 100));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_CENTURY, BCD(currentTime.Year / 100));
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryLocations.MemoryMap.RTC_DOW, (byte)(currentTime.DayOfWeek + 1));
         }
 
         private byte BCD(int val)
@@ -362,7 +372,8 @@ namespace FoenixIDE.UI
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 debugWindow.Close();
-                memoryWindow.Close();
+                if (memoryWindow != null)
+                    memoryWindow.Close();
                 if (ResetMemory)
                 {
                     system = FoenixSystem.Current;
@@ -371,7 +382,7 @@ namespace FoenixIDE.UI
                 system.SetKernel(dialog.FileName);
                 system.ResetCPU(ResetMemory);
                 ShowDebugWindow();
-                ShowMemoryWindow();
+                //ShowMemoryWindow();
                 if (tileEditor != null && tileEditor.Visible)
                 {
                     tileEditor.SetMemory(system.MemoryManager);
@@ -446,7 +457,8 @@ namespace FoenixIDE.UI
         {
             system.GPU.TileEditorMode = false;
             // Restore the previous graphics mode
-            system.VICKY.WriteByte(0, previousGraphicMode);
+            //system.VICKY.WriteByte(0, previousGraphicMode);
+            FoenixSystem.Current.MemoryManager.WriteByte(MemoryMap.VICKY_BASE_ADDR, previousGraphicMode);
             tileEditor.Dispose();
             tileEditor = null;
         }
@@ -458,11 +470,16 @@ namespace FoenixIDE.UI
                 tileEditor = new TileEditor();
                 tileEditor.SetMemory(system.MemoryManager);
                 system.GPU.TileEditorMode = true;
+                //// Set Vicky into Tile mode
+                //previousGraphicMode = system.VICKY.ReadByte(0);
+                //system.VICKY.WriteByte(0, 0x10);
+                //// Enable borders
+                //system.VICKY.WriteByte(4, 1);
                 // Set Vicky into Tile mode
-                previousGraphicMode = system.VICKY.ReadByte(0);
-                system.VICKY.WriteByte(0, 0x10);
+                previousGraphicMode = FoenixSystem.Current.MemoryManager.ReadByte(MemoryMap.VICKY_BASE_ADDR);
+                FoenixSystem.Current.MemoryManager.WriteByte(MemoryMap.VICKY_BASE_ADDR, 0x10);
                 // Enable borders
-                system.VICKY.WriteByte(4, 1);
+                FoenixSystem.Current.MemoryManager.WriteByte(MemoryMap.VICKY_BASE_ADDR + 4, 1);
                 tileEditor.Show();
                 tileEditor.FormClosed += new FormClosedEventHandler(EditorWindowClosed);
 
@@ -493,14 +510,17 @@ namespace FoenixIDE.UI
             else
             {
                 // Read the mouse pointer register
-                byte mouseReg = system.VICKY.ReadByte(0x700);
+                //byte mouseReg = system.VICKY.ReadByte(0x700);
+                byte mouseReg = FoenixSystem.Current.MemoryManager.ReadByte(0xAF_0700);
                 if ((mouseReg & 1) == 1)
                 {
                     int X = (int)(e.X / ratioW);
                     int Y = (int)(e.Y / ratioH);
-                    system.VICKY.WriteWord(0x702, X);
-                    system.VICKY.WriteWord(0x704, Y);
-                    
+                    //system.VICKY.WriteWord(0x702, X);
+                    //system.VICKY.WriteWord(0x704, Y);
+                    FoenixSystem.Current.MemoryManager.WriteWord(0xAF_0702, X);
+                    FoenixSystem.Current.MemoryManager.WriteWord(0xAF_0704, Y);
+
                 }
                 else
                 {

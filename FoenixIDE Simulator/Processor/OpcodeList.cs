@@ -276,7 +276,7 @@ namespace FoenixIDE.Processor
         public OpcodeList(Operations operations, CPU CPU)
         {
             Add(new OpCode(0x00, "BRK", 2, AddressModes.Interrupt, new OpCode.ExecuteDelegate(operations.ExecuteInterrupt)));
-            Add(new OpCode(0x01, "ORA", 2, AddressModes.DirectPageIndexedIndirectWithX, new OpCode.ExecuteDelegate(operations.ExecuteORA)));
+            Add(new OpCode(0x01, "ORA", 2, CPU.A, AddressModes.DirectPageIndexedIndirectWithX, new OpCode.ExecuteDelegate(operations.ExecuteORA)));
             Add(new OpCode(0x02, "COP", 2, AddressModes.Interrupt, new OpCode.ExecuteDelegate(operations.ExecuteInterrupt)));
             Add(new OpCode(0x03, "ORA", 2, AddressModes.StackRelative, new OpCode.ExecuteDelegate(operations.ExecuteORA)));
             Add(new OpCode(0x04, "TSB", 2, AddressModes.DirectPage, new OpCode.ExecuteDelegate(operations.ExecuteTSBTRB)));
@@ -348,7 +348,7 @@ namespace FoenixIDE.Processor
             Add(new OpCode(0x46, "LSR", 2, AddressModes.DirectPage, new OpCode.ExecuteDelegate(operations.ExecuteShift)));
             Add(new OpCode(0x47, "EOR", 2, AddressModes.DirectPageIndirectLong, new OpCode.ExecuteDelegate(operations.ExecuteEOR)));
             Add(new OpCode(0x48, "PHA", 1, AddressModes.StackImplied, new OpCode.ExecuteDelegate(operations.ExecuteStack)));
-            Add(new OpCode(0x49, "EOR", 2, AddressModes.Immediate, new OpCode.ExecuteDelegate(operations.ExecuteEOR)));
+            Add(new OpCode(0x49, "EOR", 2, CPU.A, AddressModes.Immediate, new OpCode.ExecuteDelegate(operations.ExecuteEOR)));
             Add(new OpCode(0x4A, "LSR", 1, AddressModes.Accumulator, new OpCode.ExecuteDelegate(operations.ExecuteShift)));
             Add(new OpCode(0x4B, "PHK", 1, AddressModes.StackImplied, new OpCode.ExecuteDelegate(operations.ExecuteStack)));
             Add(new OpCode(0x4C, "JMP", 3, AddressModes.Absolute, new OpCode.ExecuteDelegate(operations.ExecuteJumpReturn)));

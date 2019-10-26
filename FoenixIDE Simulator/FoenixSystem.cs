@@ -20,7 +20,7 @@ namespace FoenixIDE
         
         /* should replace this fixed access points with somthing dynamix */
         //public BasicMemory RAM;
-        public BasicMemory VICKY;
+        //public BasicMemory VICKY;
         //public BasicMemory VIDEO;
         public BasicMemory FLASH;
         public BasicMemory BEATRIX;
@@ -83,8 +83,8 @@ namespace FoenixIDE
 
             //RAM = new BasicMemory("Ram", MemoryMap.RAM_START, MemoryMap.RAM_SIZE);   // 2MB RAM - extensible to 4MB
             //MemoryManager.AddDevice(RAM);
-            VICKY = new BasicMemory("Vicky", MemoryMap.VICKY_START, MemoryMap.VICKY_SIZE);   // 60K
-            MemoryManager.AddDevice(VICKY);
+            //VICKY = new BasicMemory("Vicky", MemoryMap.VICKY_START, MemoryMap.VICKY_SIZE);   // 60K
+            //MemoryManager.AddDevice(VICKY);
             //VIDEO = new BasicMemory("Video", MemoryMap.VIDEO_START, MemoryMap.VIDEO_SIZE - 1); // 4MB Video
             //MemoryManager.AddDevice(VIDEO);
             FLASH = new BasicMemory("Flash", MemoryMap.FLASH_START, MemoryMap.FLASH_SIZE); // 8MB RAM
@@ -119,7 +119,7 @@ namespace FoenixIDE
 
             //gpu.VRAM = VIDEO;
             //gpu.RAM = RAM; 
-            gpu.VICKY = VICKY;
+            //gpu.VICKY = VICKY;
             
             // This fontset is loaded just in case the kernel doesn't provide one.
             gpu.LoadFontSet("Foenix", @"Resources\Bm437_PhoenixEGA_8x8.bin", 0, CharacterSet.CharTypeCodes.ASCII_PET, CharacterSet.SizeCodes.Size8x8);
@@ -171,6 +171,7 @@ namespace FoenixIDE
 
             // If the reset vector is not set in Bank 0, but it is set in Bank 18, then copy bank 18 into bank 0.
             if (MemoryManager.ReadLong(0xFFE0) == 0 && MemoryManager.ReadLong(0x18_FFE0) != 0)
+            //if (MemoryManager.ReadLong(0xFFFC) == 0 && MemoryManager.ReadLong(0x18_FFFC) != 0)
             {
                 MemoryManager.Copy(0x180000, MemoryMap.RAM_START, MemoryMap.PAGE_SIZE);
                 // See if lines of code exist in the 0x18_0000 to 0x18_FFFF block

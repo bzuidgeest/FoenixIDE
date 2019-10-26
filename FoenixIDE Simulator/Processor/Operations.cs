@@ -621,12 +621,14 @@ namespace FoenixIDE.Processor
                     if (cpu.A.Width == 1)
                     {
                         cpu.memoryManager.WriteByte(addr, (byte)bval);
+                        cpu.Flags.SetNZ(bval, 1);
                     }
                     else
                     {
                         cpu.memoryManager.WriteWord(addr, bval);
+                        cpu.Flags.SetNZ(bval, 2);
                     }
-                    cpu.Flags.SetNZ(bval, 1);
+                    
                     break;
 
                 case OpcodeList.INC_Accumulator:
@@ -642,15 +644,14 @@ namespace FoenixIDE.Processor
                     if (cpu.A.Width == 1)
                     {
                         cpu.memoryManager.WriteByte(addr, (byte)bval);
+                        cpu.Flags.SetNZ(bval, 1);
                     }
                     else
                     {
                         cpu.memoryManager.WriteWord(addr, bval);
+                        cpu.Flags.SetNZ(bval, 2);
                     }
-                    
-                    cpu.Flags.SetNZ(bval, 1);
                     break;
-
                 case OpcodeList.DEX_Implied:
                     cpu.X.Value -= 1;
                     cpu.Flags.SetNZ(cpu.X);

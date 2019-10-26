@@ -13,6 +13,7 @@ namespace FoenixIDE.Simulator.FileFormat
             String processedFileName = Filename;
 
             if (!System.IO.File.Exists(Filename))
+            //if(true)
             {
                 OpenFileDialog f = new OpenFileDialog
                 {
